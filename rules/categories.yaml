@@ -1,0 +1,51 @@
+# stackprint's own category taxonomy. Kept deliberately small: a category
+# must be useful for grouping or filtering, not a fine-grained label.
+- {id: cms, name: Content management system}
+- {id: site-builder, name: Hosted site builder}
+- {id: ecommerce, name: E-commerce platform}
+- {id: wp-plugin, name: WordPress plugin}
+- {id: wp-theme, name: WordPress theme}
+- {id: page-builder, name: Page builder}
+- {id: js-library, name: JavaScript library}
+- {id: js-framework, name: JavaScript framework}
+- {id: css-framework, name: CSS framework}
+- {id: analytics, name: Analytics}
+- {id: tag-manager, name: Tag manager}
+- {id: advertising, name: Advertising and conversion tracking}
+- {id: cookie-consent, name: Cookie consent and privacy}
+- {id: marketing-automation, name: Marketing automation and email}
+- {id: live-chat, name: Live chat and support widgets}
+- {id: payment, name: Payment}
+- {id: seo, name: SEO}
+- {id: cache, name: Caching and performance}
+- {id: security, name: Security}
+- {id: cdn, name: CDN}
+- {id: web-server, name: Web server}
+- {id: reverse-proxy, name: Reverse proxy and load balancer}
+- {id: programming-language, name: Programming language}
+- {id: hosting, name: Hosting}
+- {id: dns-provider, name: DNS provider}
+- {id: email-provider, name: Email hosting}
+- {id: email-security, name: Email security and delivery}
+- {id: font, name: Web fonts}
+- {id: maps, name: Maps}
+- {id: video, name: Video}
+- {id: forms, name: Forms}
+- {id: search, name: Site search}
+- {id: package-cdn, name: Package from a public package CDN}
+- {id: reviews, name: Reviews and ratings widgets}
+- {id: translation, name: Website translation}
+- {id: domain-parking, name: Domain parking and domain sales}
+- {id: crm, name: CRM}
+- {id: booking, name: Booking and scheduling}
+- {id: accessibility, name: Accessibility}
+- {id: ab-testing, name: A/B testing}
+- {id: customer-data-platform, name: Customer data platform}
+- {id: personalisation, name: Personalisation}
+- {id: survey, name: Surveys and feedback}
+- {id: social, name: Social media widgets}
+- {id: affiliate, name: Affiliate marketing}
+- {id: monitoring, name: Monitoring and error tracking}
+- {id: authentication, name: Authentication}
+- {id: captcha, name: CAPTCHA and bot protection}
+- {id: media-hosting, name: Media hosting}

@@ -1,0 +1,129 @@
+# Member rules add signals to individual plugins of the wp-plugin family.
+# Every plugin is detected from its folder path without a rule of its own;
+# a member rule is worth adding when the plugin leaves markers outside its
+# folder (classes, comments, generator tags) or prints its version.
+
+- id: wp-plugin/woocommerce
+  name: WooCommerce
+  vendor: automattic
+  website: https://woocommerce.com
+  categories: [ecommerce]
+  identifiers:
+    cpe: ["cpe:2.3:a:woocommerce:woocommerce"]
+  signals:
+    - id: params-global
+      type: js_global
+      key: woocommerce_params
+    - id: generator
+      type: meta
+      key: generator
+      regex: '^WooCommerce ([0-9][0-9.]*)'
+      version: '\1'
+      version_confidence: high
+    - id: hybrid-ver
+      # Libraries WooCommerce bundles are enqueued as ?ver=<lib>-wc.<wc version>.
+      type: resource_url
+      regex: '/wp-content/plugins/woocommerce/[^?]*\?(?:[^#]*&)?ver=[0-9][0-9.]*-wc\.([0-9]+(?:\.[0-9]+)+)'
+      version: '\1'
+      version_confidence: medium
+    - id: body-class
+      type: class
+      exact: woocommerce-page
+      confidence: 80
+    - id: cart-cookie
+      type: cookie
+      key: woocommerce_items_in_cart
+      confidence: 100
+  provenance:
+    method: convention
+    basis: >-
+      WooCommerce prints a "WooCommerce <version>" generator tag, versions its
+      bundled libraries as <lib>-wc.<version>, and adds woocommerce body classes
+      and cart cookies.
+  tests:
+    - name: generator
+      page:
+        url: https://shop.example.test/
+        html: '<meta name="generator" content="WooCommerce 9.1.2">'
+      expect: {version: 9.1.2}
+    - name: hybrid version from bundled library
+      page:
+        url: https://shop.example.test/
+        html: '<script src="/wp-content/plugins/woocommerce/assets/js/jquery-blockui/jquery.blockUI.min.js?ver=2.7.0-wc.10.7.0"></script>'
+      expect: {version: 10.7.0}
+
+- id: wp-plugin/elementor
+  name: Elementor
+  vendor: elementor
+  website: https://elementor.com
+  categories: [page-builder]
+  identifiers:
+    cpe: ["cpe:2.3:a:elementor:elementor_website_builder"]
+  signals:
+    - id: generator
+      type: meta
+      key: generator
+      regex: '^Elementor ([0-9][0-9.]*)'
+      version: '\1'
+      version_confidence: high
+    - id: data-type
+      type: data_attr
+      key: data-elementor-type
+      confidence: 80
+  provenance:
+    method: convention
+    basis: >-
+      Elementor prints a generator tag "Elementor <version>; features: ..."
+      and marks its documents with data-elementor-type.
+  tests:
+    - name: generator
+      page:
+        url: https://example.test/
+        html: '<meta name="generator" content="Elementor 3.20.1; features: e_optimized_assets_loading">'
+      expect: {version: 3.20.1}
+
+- id: wp-plugin/wordpress-seo
+  name: Yoast SEO
+  vendor: yoast
+  website: https://yoast.com
+  categories: [seo]
+  identifiers:
+    cpe: ["cpe:2.3:a:yoast:yoast_seo"]
+  signals:
+    - id: comment
+      type: comment
+      regex: 'optimized with the Yoast SEO plugin v([0-9][0-9.]*)'
+      version: '\1'
+      version_confidence: high
+    - id: schema-graph
+      type: class
+      exact: yoast-schema-graph
+  provenance:
+    method: convention
+    basis: >-
+      Yoast SEO wraps its head output in an HTML comment naming the plugin and
+      its version, and tags its JSON-LD script with class yoast-schema-graph.
+  tests:
+    - name: comment with version
+      page:
+        url: https://example.test/
+        html: '<!-- This site is optimized with the Yoast SEO plugin v22.6 - https://yoast.com/wordpress/plugins/seo/ -->'
+      expect: {version: "22.6"}
+
+- id: wp-plugin/contact-form-7
+  name: Contact Form 7
+  website: https://contactform7.com
+  categories: [forms]
+  signals:
+    - id: form-class
+      type: class
+      exact: wpcf7-form
+  provenance:
+    method: convention
+    basis: Contact Form 7 renders its forms with class wpcf7-form.
+  tests:
+    - name: form class
+      page:
+        url: https://example.test/
+        html: '<form class="wpcf7-form init" action="/contact/#wpcf7-f1"></form>'
+      expect: {}

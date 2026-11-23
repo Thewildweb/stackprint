@@ -1,0 +1,354 @@
+- id: php
+  name: PHP
+  vendor: php-group
+  website: https://www.php.net
+  categories: [programming-language]
+  identifiers:
+    cpe: ["cpe:2.3:a:php:php"]
+  signals:
+    - id: powered-by
+      type: header
+      key: x-powered-by
+      regex: '^PHP(?:/([0-9]+\.[0-9]+(?:\.[0-9]+)?))?'
+      version: '\1'
+      version_confidence: high
+    - id: session-cookie
+      type: cookie
+      key: PHPSESSID
+      confidence: 80
+  provenance:
+    method: convention
+    basis: PHP announces itself in X-Powered-By (expose_php) and names its default session cookie PHPSESSID.
+  tests:
+    - name: powered-by header
+      page:
+        url: https://example.test/
+        headers: [["X-Powered-By", "PHP/8.2.18"]]
+      expect: {version: 8.2.18}
+
+- id: nginx
+  name: Nginx
+  vendor: f5
+  website: https://nginx.org
+  categories: [web-server, reverse-proxy]
+  identifiers:
+    cpe: ["cpe:2.3:a:f5:nginx"]
+  signals:
+    - id: server
+      type: header
+      key: server
+      regex: '^nginx(?:/([0-9]+\.[0-9]+\.[0-9]+))?'
+      version: '\1'
+      version_confidence: high
+  provenance:
+    method: convention
+    basis: 'Nginx sends "Server: nginx[/<version>]" by default.'
+  tests:
+    - name: server with version
+      page:
+        url: https://example.test/
+        headers: [["Server", "nginx/1.24.0"]]
+      expect: {version: 1.24.0}
+
+- id: apache-httpd
+  name: Apache HTTP Server
+  vendor: apache
+  website: https://httpd.apache.org
+  categories: [web-server]
+  identifiers:
+    cpe: ["cpe:2.3:a:apache:http_server"]
+  signals:
+    - id: server
+      type: header
+      key: server
+      regex: '^Apache(?:/([0-9]+\.[0-9]+\.[0-9]+))?'
+      version: '\1'
+      version_confidence: high
+  provenance:
+    method: convention
+    basis: 'Apache httpd sends "Server: Apache[/<version>] ..." depending on ServerTokens.'
+  tests:
+    - name: server with version
+      page:
+        url: https://example.test/
+        headers: [["Server", "Apache/2.4.58 (Ubuntu)"]]
+      expect: {version: 2.4.58}
+
+- id: litespeed
+  name: LiteSpeed Web Server
+  vendor: litespeed-technologies
+  website: https://www.litespeedtech.com
+  categories: [web-server]
+  signals:
+    - id: server
+      type: header
+      key: server
+      regex: '^LiteSpeed'
+  provenance:
+    method: convention
+    basis: 'LiteSpeed sends "Server: LiteSpeed".'
+  tests:
+    - name: server
+      page:
+        url: https://example.test/
+        headers: [["server", "LiteSpeed"]]
+      expect: {}
+
+- id: microsoft-iis
+  name: Microsoft IIS
+  vendor: microsoft
+  categories: [web-server]
+  identifiers:
+    cpe: ["cpe:2.3:a:microsoft:internet_information_services"]
+  signals:
+    - id: server
+      type: header
+      key: server
+      regex: '^Microsoft-IIS(?:/([0-9]+\.[0-9]+))?'
+      version: '\1'
+      version_confidence: high
+  provenance:
+    method: convention
+    basis: 'IIS sends "Server: Microsoft-IIS/<version>".'
+  tests:
+    - name: server
+      page:
+        url: https://example.test/
+        headers: [["Server", "Microsoft-IIS/10.0"]]
+      expect: {version: "10.0"}
+
+- id: cloudflare
+  name: Cloudflare
+  vendor: cloudflare
+  website: https://www.cloudflare.com
+  categories: [cdn, security]
+  signals:
+    - id: server
+      type: header
+      key: server
+      exact: cloudflare
+      ignore_case: true
+    - id: cf-ray
+      type: header
+      key: cf-ray
+  provenance:
+    method: convention
+    basis: 'Responses proxied by Cloudflare carry "Server: cloudflare" and a CF-RAY request id header.'
+  tests:
+    - name: proxied response
+      page:
+        url: https://example.test/
+        headers: [["Server", "cloudflare"], ["CF-RAY", "8a1b2c3d4e5f6a7b-AMS"]]
+      expect: {min_confidence: 100}
+
+- id: shopify
+  name: Shopify
+  vendor: shopify
+  website: https://www.shopify.com
+  categories: [ecommerce, site-builder]
+  signals:
+    - id: monorail
+      # Shopify's storefront analytics endpoint (browser fetchers see it).
+      type: resource_url
+      contains: //monorail-edge.shopifysvc.com/
+    - id: global
+      type: js_global
+      key: Shopify
+    - id: cdn
+      type: resource_url
+      contains: //cdn.shopify.com/
+      confidence: 80
+    - id: shop-id-header
+      type: header
+      key: x-shopid
+    - id: cookie
+      type: cookie
+      key: _shopify_y
+  provenance:
+    method: convention
+    basis: Shopify storefronts load theme assets from cdn.shopify.com, send an X-ShopId header and set _shopify_* cookies.
+  tests:
+    - name: storefront
+      page:
+        url: https://shop.example.test/
+        headers: [["x-shopid", "12345"]]
+        html: '<link rel="stylesheet" href="//cdn.shopify.com/s/files/1/0000/0001/t/1/assets/theme.css">'
+      expect: {min_confidence: 100}
+
+- id: wix
+  name: Wix
+  vendor: wix
+  website: https://www.wix.com
+  categories: [site-builder]
+  signals:
+    - id: media-trace
+      # Wix media platform response header on sub-resources.
+      type: resource_header
+      key: x-wixmp-trace
+    - id: static
+      type: resource_url
+      contains: //static.wixstatic.com/
+    - id: generator
+      type: meta
+      key: generator
+      prefix: Wix.com Website Builder
+    - id: request-id
+      type: header
+      key: x-wix-request-id
+  provenance:
+    method: convention
+    basis: Wix sites print a "Wix.com Website Builder" generator tag and send X-Wix-Request-Id.
+  tests:
+    - name: generator
+      page:
+        url: https://example.test/
+        html: '<meta name="generator" content="Wix.com Website Builder">'
+      expect: {}
+
+- id: joomla
+  name: Joomla
+  vendor: joomla
+  website: https://www.joomla.org
+  categories: [cms]
+  identifiers:
+    cpe: ["cpe:2.3:a:joomla:joomla\\!"]
+  implies: [php]
+  signals:
+    - id: global
+      type: js_global
+      key: Joomla
+    - id: generator
+      type: meta
+      key: generator
+      prefix: Joomla!
+    - id: script-options
+      # Joomla 4+ passes client options in <script class="joomla-script-options">.
+      type: class
+      exact: joomla-script-options
+    - id: media-system-js
+      # Core scripts live under /media/system/js/ in Joomla 4+.
+      type: resource_url
+      contains: /media/system/js/
+      first_party: true
+  provenance:
+    method: mined
+    basis: >-
+      Generator tag by convention; script-options and media-system-js found as
+      recall gaps (lift ~78, recall 0.70-0.84 against generator-labelled pages)
+      and confirmed on replay: 84 of 87 new detections agree with an
+      independent platform verdict, the 3 others were system-message-only and
+      that signal was dropped.
+    corpus: nl-homepages-2026-11-22 (20,000 Dutch homepages)
+    support: 217
+    recall: 0.849
+    mined_run: mine-2026-11-22-20k
+    reviewed_by: pending maintainer review
+    reviewed_at: 2026-11-22
+  tests:
+    - name: generator
+      page:
+        url: https://example.test/
+        html: '<meta name="generator" content="Joomla! - Open Source Content Management">'
+      expect: {}
+    - name: generator removed, script options present
+      page:
+        url: https://example.test/
+        html: '<script type="application/json" class="joomla-script-options new">{"system.paths":{"root":""}}</script><script src="/media/system/js/core.min.js?abc"></script>'
+      expect: {min_confidence: 100}
+
+- id: drupal
+  name: Drupal
+  vendor: drupal
+  website: https://www.drupal.org
+  categories: [cms]
+  identifiers:
+    cpe: ["cpe:2.3:a:drupal:drupal"]
+  implies: [php]
+  signals:
+    - id: generator
+      type: meta
+      key: generator
+      regex: '^Drupal ([0-9]+)'
+      version: '\1'
+      version_confidence: low
+    - id: x-generator
+      type: header
+      key: x-generator
+      regex: '^Drupal ([0-9]+)'
+      version: '\1'
+      version_confidence: low
+    - id: drupal-cache
+      type: header
+      key: x-drupal-cache
+    - id: drupal-selector
+      type: data_attr
+      key: data-drupal-selector
+    - id: off-canvas
+      type: class
+      exact: dialog-off-canvas-main-canvas
+    - id: sites-default-files
+      # Public files and aggregated CSS/JS of the default site. Drupal news
+      # sites are hotlinked a lot, so first party only.
+      type: resource_url
+      contains: /sites/default/files/
+      first_party: true
+      confidence: 50
+  provenance:
+    method: mined
+    basis: >-
+      Generator tag and X-Generator header by convention (major version only);
+      the cache header, data-drupal-selector, off-canvas class and
+      /sites/default/files/ found as recall gaps (lift 256-274) and confirmed
+      on replay (16 of 19 new detections agree with an independent platform
+      verdict; the 3 others were third-party /sites/default/files/ links,
+      fixed by first_party).
+    corpus: nl-homepages-2026-11-22 (20,000 Dutch homepages)
+    support: 57
+    recall: 0.734
+    mined_run: mine-2026-11-22-20k
+    reviewed_by: pending maintainer review
+    reviewed_at: 2026-11-22
+  tests:
+    - name: x-generator
+      page:
+        url: https://example.test/
+        headers: [["X-Generator", "Drupal 10 (https://www.drupal.org)"]]
+      expect: {version: "10"}
+    - name: hotlinked drupal files are not this site
+      page:
+        url: https://example.test/
+        html: '<img src="https://news.example.org/sites/default/files/2025/a.jpg">'
+      expect: {absent: true}
+    - name: cache header
+      page:
+        url: https://example.test/
+        headers: [["X-Drupal-Cache", "HIT"]]
+      expect: {}
+
+- id: nextjs
+  name: Next.js
+  vendor: vercel
+  website: https://nextjs.org
+  categories: [js-framework]
+  identifiers:
+    purl: pkg:npm/next
+  signals:
+    - id: flight-global
+      type: js_global
+      key: __next_f
+    - id: static
+      type: script_url
+      contains: /_next/static/
+    - id: powered-by
+      type: header
+      key: x-powered-by
+      prefix: Next.js
+  provenance:
+    method: convention
+    basis: 'Next.js serves its build output under /_next/static/ and sends "X-Powered-By: Next.js" by default.'
+  tests:
+    - name: static chunk
+      page:
+        url: https://example.test/
+        html: '<script src="/_next/static/chunks/main-abc123.js" defer></script>'
+      expect: {}

@@ -1,0 +1,67 @@
+- id: google-workspace
+  name: Google Workspace
+  vendor: google
+  website: https://workspace.google.com
+  categories: [email-provider]
+  signals:
+    - id: mx
+      type: dns
+      key: MX
+      regex: '(?:^|[ .])(?:aspmx\.l|smtp)\.google\.com$'
+    - id: spf
+      type: dns
+      key: TXT
+      contains: include:_spf.google.com
+      confidence: 50
+  provenance:
+    method: convention
+    basis: Google Workspace mail is received by aspmx.l.google.com (or smtp.google.com) and its SPF include is _spf.google.com.
+  tests:
+    - name: mx
+      page:
+        url: https://example.test/
+        dns: {MX: ["1 aspmx.l.google.com.", "5 alt1.aspmx.l.google.com."]}
+      expect: {min_confidence: 100}
+
+- id: microsoft-365
+  name: Microsoft 365
+  vendor: microsoft
+  categories: [email-provider]
+  signals:
+    - id: mx
+      type: dns
+      key: MX
+      suffix: .mail.protection.outlook.com
+    - id: spf
+      type: dns
+      key: TXT
+      contains: include:spf.protection.outlook.com
+      confidence: 50
+  provenance:
+    method: convention
+    basis: Exchange Online receives mail at <tenant>.mail.protection.outlook.com; its SPF include is spf.protection.outlook.com.
+  tests:
+    - name: mx
+      page:
+        url: https://example.test/
+        dns: {MX: ["0 example-test.mail.protection.outlook.com"]}
+      expect: {}
+
+- id: cloudflare-dns
+  name: Cloudflare DNS
+  vendor: cloudflare
+  categories: [dns-provider]
+  signals:
+    - id: ns
+      type: dns
+      key: NS
+      suffix: .ns.cloudflare.com
+  provenance:
+    method: convention
+    basis: Zones on Cloudflare are delegated to <name>.ns.cloudflare.com name servers.
+  tests:
+    - name: ns
+      page:
+        url: https://example.test/
+        dns: {NS: ["ada.ns.cloudflare.com.", "bob.ns.cloudflare.com."]}
+      expect: {}

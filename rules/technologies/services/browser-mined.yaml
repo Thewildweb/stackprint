@@ -1,0 +1,231 @@
+# Technologies first found as frequent unexplained tokens in browser
+# captures (request hosts, JS globals, cookies, response headers). Each signal
+# is a vendor-owned host or a token that co-occurred with the vendor's host
+# on (nearly) every page in the mining run.
+
+- id: squarespace
+  name: Squarespace
+  vendor: squarespace
+  website: https://www.squarespace.com
+  categories: [site-builder]
+  signals:
+    - {id: static, type: resource_url, contains: //static1.squarespace.com/}
+    - {id: assets, type: resource_url, contains: //assets.squarespace.com/}
+    - {id: rollups-global, type: js_global, key: SQUARESPACE_ROLLUPS}
+    - {id: cvr-cookie, type: cookie, key: ss_cvr, confidence: 80}
+  provenance:
+    method: mined
+    basis: >-
+      Squarespace sites load their platform assets from vendor-owned
+      static1/assets.squarespace.com; SQUARESPACE_ROLLUPS and the ss_cvr cookie
+      co-occur with those hosts. Found as unexplained hosts/globals.
+    corpus: nl-browser-2026-09 (30,002 Dutch homepages, browser capture)
+    support: 501
+    mined_run: mine-2026-11-22-browser-30k
+    reviewed_by: pending maintainer review
+  tests:
+    - name: static host
+      page: {url: "https://example.test/", html: '<script src="https://static1.squarespace.com/static/vta/abc/scripts/site-bundle.js"></script>'}
+      expect: {}
+    - name: global only
+      page: {url: "https://example.test/", js_globals: {SQUARESPACE_ROLLUPS: ""}}
+      expect: {}
+
+- id: godaddy-website-builder
+  name: GoDaddy Website Builder
+  vendor: godaddy
+  categories: [site-builder]
+  signals:
+    - {id: wsimg, type: resource_url, contains: //img1.wsimg.com/}
+    - {id: instantpage, type: resource_url, contains: .apps-api.instantpage.secureserver.net/}
+  provenance:
+    method: mined
+    basis: >-
+      Sites built with GoDaddy's builder load assets from GoDaddy's
+      img1.wsimg.com and post forms to instantpage.secureserver.net.
+    corpus: nl-browser-2026-09 (30,002 Dutch homepages, browser capture)
+    support: 558
+    mined_run: mine-2026-11-22-browser-30k
+    reviewed_by: pending maintainer review
+  tests:
+    - name: wsimg asset
+      page: {url: "https://example.test/", html: '<img src="//img1.wsimg.com/isteam/ip/abc/logo.png">'}
+      expect: {}
+
+- id: framer
+  name: Framer
+  vendor: framer
+  website: https://www.framer.com
+  categories: [site-builder]
+  signals:
+    - {id: user-content, type: resource_url, contains: //framerusercontent.com/}
+    - {id: events, type: resource_url, contains: //events.framer.com/}
+  provenance:
+    method: mined
+    basis: Framer sites load site assets from framerusercontent.com and send analytics to events.framer.com.
+    corpus: nl-browser-2026-09 (30,002 Dutch homepages, browser capture)
+    support: 58
+    mined_run: mine-2026-11-22-browser-30k
+    reviewed_by: pending maintainer review
+  tests:
+    - name: user content
+      page: {url: "https://example.test/", html: '<script type="module" src="https://framerusercontent.com/sites/abc/script_main.mjs"></script>'}
+      expect: {}
+
+- id: trustpilot-widget
+  name: Trustpilot widget
+  vendor: trustpilot
+  categories: [reviews]
+  signals:
+    - {id: widget, type: resource_url, contains: //widget.trustpilot.com/}
+    - {id: global, type: js_global, key: Trustpilot}
+  provenance:
+    method: mined
+    basis: The TrustBox widget loads from widget.trustpilot.com and defines window.Trustpilot.
+    corpus: nl-browser-2026-09 (30,002 Dutch homepages, browser capture)
+    support: 1304
+    mined_run: mine-2026-11-22-browser-30k
+    reviewed_by: pending maintainer review
+  tests:
+    - name: bootstrap script
+      page: {url: "https://example.test/", html: '<script src="//widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js" async></script>'}
+      expect: {}
+
+- id: weglot
+  name: Weglot
+  vendor: weglot
+  categories: [translation]
+  signals:
+    - {id: cdn, type: resource_url, contains: //cdn.weglot.com/}
+  provenance:
+    method: mined
+    basis: Weglot's translation script is served from cdn.weglot.com.
+    corpus: nl-browser-2026-09 (30,002 Dutch homepages, browser capture)
+    support: 89
+    mined_run: mine-2026-11-22-browser-30k
+    reviewed_by: pending maintainer review
+  tests:
+    - name: script
+      page: {url: "https://example.test/", html: '<script src="https://cdn.weglot.com/weglot.min.js"></script>'}
+      expect: {}
+
+- id: umami
+  name: Umami
+  website: https://umami.is
+  categories: [analytics]
+  signals:
+    - {id: global, type: js_global, key: umami}
+  provenance:
+    method: mined
+    basis: The Umami tracker defines window.umami. Frequent as an unexplained global; many occurrences are domain-sale landing pages that embed it.
+    corpus: nl-browser-2026-09 (30,002 Dutch homepages, browser capture)
+    support: 1524
+    mined_run: mine-2026-11-22-browser-30k
+    reviewed_by: pending maintainer review
+  tests:
+    - name: global
+      page: {url: "https://example.test/", js_globals: {umami: ""}}
+      expect: {}
+
+- id: nameshift
+  name: Nameshift
+  vendor: nameshift
+  categories: [domain-parking]
+  signals:
+    - {id: buy, type: resource_url, contains: //buy.nameshift.com/}
+    - {id: api, type: resource_url, contains: .api.nameshift.com/}
+  provenance:
+    method: mined
+    basis: Domain-for-sale landing pages served by Nameshift load from buy.nameshift.com and its API hosts.
+    corpus: nl-browser-2026-09 (30,002 Dutch homepages, browser capture)
+    support: 982
+    mined_run: mine-2026-11-22-browser-30k
+    reviewed_by: pending maintainer review
+  tests:
+    - name: landing
+      page: {url: "https://example.test/", html: '<script src="https://buy.nameshift.com/assets/app.js"></script>'}
+      expect: {}
+
+- id: sveltekit
+  name: SvelteKit
+  categories: [js-framework]
+  identifiers: {purl: pkg:npm/@sveltejs/kit}
+  signals:
+    - {id: global, type: js_global, prefix: __sveltekit_}
+  provenance:
+    method: mined
+    basis: SvelteKit apps define a window.__sveltekit_<hash> global for hydration.
+    corpus: nl-browser-2026-09 (30,002 Dutch homepages, browser capture)
+    support: 743
+    mined_run: mine-2026-11-22-browser-30k
+    reviewed_by: pending maintainer review
+  tests:
+    - name: global
+      page: {url: "https://example.test/", js_globals: {__sveltekit_we07qz: ""}}
+      expect: {}
+
+- id: npm/gsap
+  name: GSAP
+  categories: [js-library]
+  identifiers: {purl: pkg:npm/gsap}
+  signals:
+    - {id: versions-global, type: js_global, key: gsapVersions}
+    - {id: banner, type: asset_body, regex: 'GSAP ([0-9]+\.[0-9]+\.[0-9]+)', version: '\1', version_confidence: high}
+  provenance:
+    method: mined
+    basis: GSAP registers window.gsapVersions and its files carry a "GSAP <version>" banner.
+    corpus: nl-browser-2026-09 (30,002 Dutch homepages, browser capture)
+    support: 2081
+    mined_run: mine-2026-11-22-browser-30k
+    reviewed_by: pending maintainer review
+  tests:
+    - name: global
+      page: {url: "https://example.test/", js_globals: {gsapVersions: ""}}
+      expect: {}
+
+- id: aspnet
+  name: ASP.NET
+  vendor: microsoft
+  categories: [programming-language]
+  signals:
+    - {id: session-cookie, type: cookie, exact: asp.net_sessionid, ignore_case: true}
+    - {id: version-header, type: header, key: x-aspnet-version, regex: '^([0-9.]+)', version: '\1', version_confidence: high}
+  provenance:
+    method: convention
+    basis: ASP.NET names its session cookie ASP.NET_SessionId and may send X-AspNet-Version.
+  tests:
+    - name: session cookie
+      page: {url: "https://example.test/", headers: [["Set-Cookie", "ASP.NET_SessionId=abc; path=/; HttpOnly"]]}
+      expect: {}
+
+- id: amazon-cloudfront
+  name: Amazon CloudFront
+  vendor: amazon
+  categories: [cdn]
+  signals:
+    - {id: cf-id, type: header, key: x-amz-cf-id}
+  provenance:
+    method: convention
+    basis: Responses served through CloudFront carry X-Amz-Cf-Id and X-Amz-Cf-Pop. Only the page's own response counts; CloudFront-served third-party assets say nothing about the site.
+  tests:
+    - name: page served by cloudfront
+      page: {url: "https://example.test/", headers: [["X-Amz-Cf-Id", "abc=="], ["X-Amz-Cf-Pop", "AMS1-C1"]]}
+      expect: {}
+
+- id: bunny-cdn
+  name: Bunny CDN
+  vendor: bunnyway
+  categories: [cdn]
+  signals:
+    - {id: pullzone, type: header, key: cdn-pullzone}
+  provenance:
+    method: mined
+    basis: Responses through a Bunny CDN pull zone carry CDN-PullZone and related CDN-* headers; found as a co-occurring unexplained header group.
+    corpus: nl-browser-2026-09 (30,002 Dutch homepages, browser capture)
+    support: 3456
+    mined_run: mine-2026-11-22-browser-30k
+    reviewed_by: pending maintainer review
+  tests:
+    - name: page served by bunny
+      page: {url: "https://example.test/", headers: [["CDN-PullZone", "12345"], ["CDN-Cache", "HIT"]]}
+      expect: {}

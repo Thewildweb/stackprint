@@ -1,0 +1,179 @@
+# Library rules generated from asset version banners (see the review pipeline).
+# Regenerate rather than edit; move a rule to a curated file before hand edits.
+- extends: npm/bootstrap
+  signals:
+  - id: file-0
+    type: resource_url
+    regex: /bootstrap(?:[-_.]?v?[0-9]+(?:\.[0-9]+)*)?(?:\.min)?\.css(?:[?#]|$)
+  - id: file-1
+    type: resource_url
+    regex: /bootstrap(?:[-_.]?v?[0-9]+(?:\.[0-9]+)*)?(?:\.min)?\.js(?:[?#]|$)
+  - id: file-version-1
+    type: resource_url
+    regex: /bootstrap[-_.]v?([0-9]+(?:\.[0-9]+)+)(?:\.min)?\.js(?:[?#]|$)
+    version: \1
+  - id: file-2
+    type: resource_url
+    regex: /bootstrap\.bundle(?:[-_.]?v?[0-9]+(?:\.[0-9]+)*)?(?:\.min)?\.js(?:[?#]|$)
+  - id: file-3
+    type: resource_url
+    regex: /combined\-min(?:[-_.]?v?[0-9]+(?:\.[0-9]+)*)?(?:\.min)?\.css(?:[?#]|$)
+  - id: banner
+    type: asset_body
+    regex: Bootstrap\ v\s?v?([0-9]+(?:\.[0-9]+)+)
+    version: \1
+    version_confidence: high
+  - id: file-0-bootstrap-grid
+    type: resource_url
+    regex: /bootstrap\-grid(?:[-_.]?v?[0-9]+(?:\.[0-9]+)*)?(?:\.min)?\.css(?:[?#]|$)
+  - id: file-1-bootstrap-grid
+    type: resource_url
+    regex: /bootstrap\.optimized(?:[-_.]?v?[0-9]+(?:\.[0-9]+)*)?(?:\.min)?\.css(?:[?#]|$)
+  - id: file-2-bootstrap-grid
+    type: resource_url
+    regex: /style\-blocks(?:[-_.]?v?[0-9]+(?:\.[0-9]+)*)?(?:\.min)?\.css(?:[?#]|$)
+  - id: file-3-bootstrap-grid
+    type: resource_url
+    regex: /bootstrapgrid(?:[-_.]?v?[0-9]+(?:\.[0-9]+)*)?(?:\.min)?\.css(?:[?#]|$)
+  - id: banner-bootstrap-grid
+    type: asset_body
+    regex: Bootstrap\ Grid\ v\s?v?([0-9]+(?:\.[0-9]+)+)
+    version: \1
+    version_confidence: high
+  provenance:
+    method: mined
+    basis: 'Loaded asset files whose own banner names this library and version. File names: newstyle.css
+      (28 sites, precision 1.0), _combined.css (13 sites, precision 1.0), style-theme.css (25 sites, precision
+      1.0), scripts-eeeipnc3.js (20 sites, precision 1.0). Banner prefix: ''Bootstrap v''. Version from
+      ?ver= or the file name only where it agreed with the banner on >= 95% of files.'
+    corpus: nl-browser-2026-06..09 asset banners
+    support: 554465
+    mined_run: libraries-2026-11
+    reviewed_by: banner ground truth + replay; metadata by llm
+  tests:
+  - name: file bootstrap.css
+    page:
+      url: https://example.test/
+      html: <link rel="stylesheet" href="/assets/bootstrap.min.css">
+    expect: {}
+  - name: file bootstrap.js
+    page:
+      url: https://example.test/
+      html: <script src="/assets/bootstrap.min.js"></script>
+    expect: {}
+  - name: file bootstrap.bundle.js
+    page:
+      url: https://example.test/
+      html: <script src="/assets/bootstrap.bundle.min.js"></script>
+    expect: {}
+  - name: file combined-min.css
+    page:
+      url: https://example.test/
+      html: <link rel="stylesheet" href="/assets/combined-min.min.css">
+    expect: {}
+- extends: npm/gsap
+  signals:
+  - id: file-0
+    type: resource_url
+    regex: /gsap\.index\-g72pdg5(?:[-_.]?v?[0-9]+(?:\.[0-9]+)*)?(?:\.min)?\.js(?:[?#]|$)
+  - id: file-1
+    type: resource_url
+    regex: /gsap\.index\-jfgoupe(?:[-_.]?v?[0-9]+(?:\.[0-9]+)*)?(?:\.min)?\.js(?:[?#]|$)
+  - id: file-2
+    type: resource_url
+    regex: /scrolltrigger\-vzvz4zd(?:[-_.]?v?[0-9]+(?:\.[0-9]+)*)?(?:\.min)?\.js(?:[?#]|$)
+  - id: file-3
+    type: resource_url
+    regex: /tweenmax(?:[-_.]?v?[0-9]+(?:\.[0-9]+)*)?(?:\.min)?\.js(?:[?#]|$)
+  - id: banner
+    type: asset_body
+    regex: \-\ GSAP\ v\s?v?([0-9]+(?:\.[0-9]+)+)
+    version: \1
+    version_confidence: high
+  provenance:
+    method: mined
+    basis: 'Loaded asset files whose own banner names this library and version. File names: gsap.index-jfgoupe.js
+      (16 sites, precision 1.0), gsap.index-g72pdg5.js (39 sites, precision 1.0), scrolltrigger-vzvz4zd.js
+      (16 sites, precision 1.0), tweenmax.js (14 sites, precision 1.0). Banner prefix: ''- GSAP v''. Version
+      from ?ver= or the file name only where it agreed with the banner on >= 95% of files.'
+    corpus: nl-browser-2026-06..09 asset banners
+    support: 97
+    mined_run: libraries-2026-11
+    reviewed_by: banner ground truth + replay; metadata by llm
+  tests:
+  - name: file gsap.index-g72pdg5.js
+    page:
+      url: https://example.test/
+      html: <script src="/assets/gsap.index-g72pdg5.min.js"></script>
+    expect: {}
+  - name: file gsap.index-jfgoupe.js
+    page:
+      url: https://example.test/
+      html: <script src="/assets/gsap.index-jfgoupe.min.js"></script>
+    expect: {}
+  - name: file scrolltrigger-vzvz4zd.js
+    page:
+      url: https://example.test/
+      html: <script src="/assets/scrolltrigger-vzvz4zd.min.js"></script>
+    expect: {}
+  - name: file tweenmax.js
+    page:
+      url: https://example.test/
+      html: <script src="/assets/tweenmax.min.js"></script>
+    expect: {}
+- extends: npm/jquery
+  signals:
+  - id: file-0
+    type: resource_url
+    regex: /jquery(?:[-_.]?v?[0-9]+(?:\.[0-9]+)*)?(?:\.min)?\.js(?:[?#]|$)
+    version_query: ver
+  - id: file-version-0
+    type: resource_url
+    regex: /jquery[-_.]v?([0-9]+(?:\.[0-9]+)+)(?:\.min)?\.js(?:[?#]|$)
+    version: \1
+  - id: file-1
+    type: resource_url
+    regex: /jquery\-latest(?:[-_.]?v?[0-9]+(?:\.[0-9]+)*)?(?:\.min)?\.js(?:[?#]|$)
+  - id: file-2
+    type: resource_url
+    regex: /common\-bundle(?:[-_.]?v?[0-9]+(?:\.[0-9]+)*)?(?:\.min)?\.js(?:[?#]|$)
+  - id: file-3
+    type: resource_url
+    regex: /jquery\-1\-9\-1(?:[-_.]?v?[0-9]+(?:\.[0-9]+)*)?(?:\.min)?\.js(?:[?#]|$)
+  - id: banner
+    type: asset_body
+    regex: jQuery\ v\s?v?([0-9]+(?:\.[0-9]+)+)
+    version: \1
+    version_confidence: high
+  provenance:
+    method: mined
+    basis: 'Loaded asset files whose own banner names this library and version. File names: jscommon.js
+      (19 sites, precision 1.0), 61z6afvbsjl._rc%7c01+-iex6+hl.js_.js (37 sites, precision 1.0), backbone-packaged.js
+      (72 sites, precision 1.0), js_u00gso0yw1nefiex3hilbihy62thujk6u5eweg4_6se.js (21 sites, precision
+      1.0). Banner prefix: ''jQuery v''. Version from ?ver= or the file name only where it agreed with
+      the banner on >= 95% of files.'
+    corpus: nl-browser-2026-06..09 asset banners
+    support: 1754460
+    mined_run: libraries-2026-11
+    reviewed_by: banner ground truth + replay; metadata by llm
+  tests:
+  - name: file jquery.js
+    page:
+      url: https://example.test/
+      html: <script src="/assets/jquery.min.js"></script>
+    expect: {}
+  - name: file jquery-latest.js
+    page:
+      url: https://example.test/
+      html: <script src="/assets/jquery-latest.min.js"></script>
+    expect: {}
+  - name: file common-bundle.js
+    page:
+      url: https://example.test/
+      html: <script src="/assets/common-bundle.min.js"></script>
+    expect: {}
+  - name: file jquery-1-9-1.js
+    page:
+      url: https://example.test/
+      html: <script src="/assets/jquery-1-9-1.min.js"></script>
+    expect: {}

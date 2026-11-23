@@ -1,0 +1,189 @@
+- id: wordpress
+  name: WordPress
+  vendor: wordpress-foundation
+  website: https://wordpress.org
+  categories: [cms]
+  identifiers:
+    cpe: ["cpe:2.3:a:wordpress:wordpress"]
+  implies: [php]
+  # Core ships its own files under /wp-includes/; bounds from core release
+  # file lists attach here.
+  folder: '/wp-includes/'
+  signals:
+    - id: generator
+      type: meta
+      key: generator
+      regex: '^WordPress(?: ([0-9][0-9.]*))?'
+      version: '\1'
+      version_confidence: high
+    - id: wp-content-script
+      type: script_url
+      contains: /wp-content/
+    - id: wp-content-style
+      type: stylesheet_url
+      contains: /wp-content/
+    - id: wp-includes
+      type: resource_url
+      contains: /wp-includes/
+      confidence: 80
+    - id: wp-json
+      type: resource_url
+      contains: /wp-json/
+      confidence: 50
+    - id: wp-content-other
+      type: resource_url
+      contains: /wp-content/
+      # Other sites' uploads are linked and hotlinked often, so only the
+      # page's own files count.
+      first_party: true
+      confidence: 80
+    - id: core-asset-ver
+      # Core's own assets carry the core version as ?ver=. Bundled
+      # libraries under /wp-includes/js/ carry their own version instead,
+      # so only core-specific files count.
+      type: resource_url
+      regex: '/wp-includes/(?:css/dist/block-library/|js/wp-emoji|css/dashicons|blocks/|js/dist/)'
+      version_query: ver
+      # js/dist/vendor/ holds bundled third-party code (polyfills, React)
+      # enqueued with its own version.
+      version_unless: '/wp-includes/js/dist/vendor/'
+      version_confidence: medium
+      confidence: 80
+  provenance:
+    method: convention
+    basis: >-
+      WordPress core prints a generator meta tag (unless removed) and serves
+      themes, plugins and uploads from /wp-content/ and its own files from
+      /wp-includes/; core assets are enqueued with ?ver=<core version>.
+  tests:
+    - name: generator with version
+      page:
+        url: https://example.test/
+        html: '<html><head><meta name="generator" content="WordPress 6.4.2"></head></html>'
+      expect: {version: 6.4.2}
+    - name: core asset version vote
+      page:
+        url: https://example.test/
+        html: >-
+          <link rel="stylesheet" href="/wp-includes/css/dist/block-library/style.min.css?ver=6.5.3">
+          <link rel="stylesheet" href="/wp-includes/css/dashicons.min.css?ver=6.5.3">
+          <script src="/wp-includes/js/jquery/jquery.min.js?ver=3.7.1"></script>
+      expect: {version: 6.5.3}
+    - name: bundled vendor script does not set the core version
+      page:
+        url: https://example.test/
+        html: >-
+          <script src="/wp-includes/js/dist/vendor/wp-polyfill.min.js?ver=3.15.0"></script>
+          <script src="/wp-includes/js/dist/hooks.min.js?ver=7.1"></script>
+      expect: {version: "7.1"}
+    - name: wp-content path only
+      page:
+        url: https://example.test/
+        html: '<script src="https://example.test/wp-content/themes/x/app.js"></script>'
+      expect: {no_version: true, min_confidence: 100}
+    - name: linked file on another WordPress site
+      page:
+        url: https://example.test/
+        html: '<a href="https://other.example.org/wp-content/uploads/2025/01/report.pdf">report</a><img src="https://other.example.org/wp-content/uploads/a.jpg">'
+      expect: {absent: true}
+    - name: no WordPress markers
+      page:
+        url: https://example.test/
+        html: '<html><body><p>wp-content mentioned in text only</p></body></html>'
+      expect: {absent: true}
+
+- id: wp-plugin/*
+  name: 'WordPress plugin {member}'
+  categories: [wp-plugin]
+  member: '[a-z0-9][a-z0-9._-]{0,99}'
+  folder: '/wp-content/plugins/{member}/'
+  implies: [wordpress]
+  identifiers:
+    wporg_slug: '{member}'
+  version_policy:
+    # Plugins often enqueue assets with the core version as cache buster.
+    suppress_equal_to: [wordpress]
+  signals:
+    - id: path
+      type: resource_url
+      # Unanchored on purpose: minify caches nest the original path
+      # (/wp-content/cache/min/1/wp-content/plugins/<slug>/...).
+      regex: '/wp-content/plugins/([a-zA-Z0-9][a-zA-Z0-9._-]*)/'
+      member: '\1'
+      version_query: ver
+      weak_version: true
+      # A file inside a vendored-library folder carries the library's version.
+      version_unless: '/wp-content/plugins/[^/?]+/(?:[^?]*/)?(?:lib|libs|library|vendor|vendors|node_modules|packages|bower_components|third-party|external)/'
+  provenance:
+    method: convention
+    basis: >-
+      WordPress serves every plugin from /wp-content/plugins/<slug>/, where
+      the slug is the plugin's directory name (its wordpress.org slug for
+      directory plugins); WordPress enqueues plugin assets with ?ver=<plugin
+      version> unless the plugin passes another value.
+  tests:
+    - name: plugin path with own version
+      page:
+        url: https://example.test/
+        html: '<script src="/wp-content/plugins/contact-form-7/includes/js/index.js?ver=5.9.3"></script>'
+      expect: {tech: wp-plugin/contact-form-7, version: 5.9.3}
+    - name: core version is not the plugin version
+      page:
+        url: https://example.test/
+        html: >-
+          <meta name="generator" content="WordPress 6.5.3">
+          <script src="/wp-content/plugins/some-plugin/app.js?ver=6.5.3"></script>
+      expect: {tech: wp-plugin/some-plugin, no_version: true}
+    - name: vendored library version is not the plugin version
+      page:
+        url: https://example.test/
+        html: '<script src="/wp-content/plugins/some-plugin/assets/vendor/select2/select2.min.js?ver=4.0.13"></script>'
+      expect: {tech: wp-plugin/some-plugin, no_version: true}
+    - name: minify cache path
+      page:
+        url: https://example.test/
+        html: '<link rel="stylesheet" href="/wp-content/cache/min/1/wp-content/plugins/some-plugin/style.css?ver=1.2.3">'
+      expect: {tech: wp-plugin/some-plugin, version: 1.2.3}
+
+- id: wp-theme/*
+  name: 'WordPress theme {member}'
+  categories: [wp-theme]
+  member: '[a-z0-9][a-z0-9._-]{0,99}'
+  folder: '/wp-content/themes/{member}/'
+  implies: [wordpress]
+  identifiers:
+    wporg_slug: '{member}'
+  version_policy:
+    suppress_equal_to: [wordpress]
+    # A child theme's version is its own counter, not the parent's.
+    suppress_member: 'child'
+  signals:
+    - id: path
+      type: resource_url
+      regex: '/wp-content/themes/([a-zA-Z0-9][a-zA-Z0-9._-]*)/'
+      member: '\1'
+    - id: style-css
+      # The theme's root style.css is enqueued with the theme header's
+      # Version as ?ver= by most themes.
+      type: stylesheet_url
+      regex: '/wp-content/themes/([a-zA-Z0-9][a-zA-Z0-9._-]*)/style(?:\.min)?\.css'
+      member: '\1'
+      version_query: ver
+  provenance:
+    method: convention
+    basis: >-
+      WordPress serves themes from /wp-content/themes/<slug>/; every theme has
+      a root style.css whose header holds its Version.
+  tests:
+    - name: theme with style.css version
+      page:
+        url: https://example.test/
+        html: >-
+          <link rel="stylesheet" href="/wp-content/themes/astra/style.min.css?ver=4.6.4">
+          <script src="/wp-content/themes/astra/assets/js/x.js?ver=9.9.9"></script>
+      expect: {tech: wp-theme/astra, version: 4.6.4}
+    - name: child theme version suppressed
+      page:
+        url: https://example.test/
+        html: '<link rel="stylesheet" href="/wp-content/themes/astra-child/style.css?ver=1.0.0">'
+      expect: {tech: wp-theme/astra-child, no_version: true}

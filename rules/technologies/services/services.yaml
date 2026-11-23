@@ -1,0 +1,185 @@
+- id: google-tag-manager
+  name: Google Tag Manager
+  vendor: google
+  website: https://tagmanager.google.com
+  categories: [tag-manager]
+  signals:
+    - id: gtm-js
+      type: resource_url
+      contains: googletagmanager.com/gtm.js
+  provenance:
+    method: convention
+    basis: The Tag Manager container snippet loads https://www.googletagmanager.com/gtm.js?id=GTM-...
+  tests:
+    - name: container snippet
+      page:
+        url: https://example.test/
+        html: >-
+          <script>(function(w,d,s,l,i){var j=d.createElement(s);j.src='https://www.googletagmanager.com/gtm.js?id='+i;})(window,document,'script','dataLayer','GTM-XXXX');</script>
+      expect: {}
+
+- id: google-tag
+  name: Google tag (gtag.js)
+  vendor: google
+  categories: [analytics, advertising]
+  signals:
+    - id: gtag-js
+      type: resource_url
+      contains: googletagmanager.com/gtag/js
+  provenance:
+    method: convention
+    basis: The Google tag loads https://www.googletagmanager.com/gtag/js?id=<tag id>.
+  tests:
+    - name: gtag
+      page:
+        url: https://example.test/
+        html: '<script async src="https://www.googletagmanager.com/gtag/js?id=G-ABC123"></script>'
+      expect: {}
+
+- id: google-analytics
+  name: Google Analytics
+  vendor: google
+  website: https://marketingplatform.google.com/about/analytics/
+  categories: [analytics]
+  signals:
+    - id: ga4-tag
+      type: resource_url
+      regex: 'googletagmanager\.com/gtag/js\?(?:[^#]*&)?id=G-'
+    - id: analytics-js
+      type: resource_url
+      contains: google-analytics.com/analytics.js
+  provenance:
+    method: convention
+    basis: GA4 measurement ids start with G- and are loaded through gtag.js; Universal Analytics loaded google-analytics.com/analytics.js.
+  tests:
+    - name: ga4
+      page:
+        url: https://example.test/
+        html: '<script async src="https://www.googletagmanager.com/gtag/js?id=G-ABC123"></script>'
+      expect: {}
+    - name: ads tag is not analytics
+      page:
+        url: https://example.test/
+        html: '<script async src="https://www.googletagmanager.com/gtag/js?id=AW-123456"></script>'
+      expect: {absent: true}
+
+- id: meta-pixel
+  name: Meta Pixel
+  vendor: meta
+  categories: [advertising]
+  signals:
+    - id: fbq-global
+      type: js_global
+      key: fbq
+    - id: fbp-cookie
+      type: cookie
+      key: _fbp
+    - id: fbevents
+      type: resource_url
+      regex: '//connect\.facebook\.net/[^"'' ]*/fbevents\.js'
+  provenance:
+    method: convention
+    basis: The Meta Pixel base code loads https://connect.facebook.net/<locale>/fbevents.js.
+  tests:
+    - name: base code
+      page:
+        url: https://example.test/
+        html: >-
+          <script>!function(f,b,e,v,n,t,s){t.src=v;}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');</script>
+      expect: {}
+
+- id: hotjar
+  name: Hotjar
+  vendor: hotjar
+  categories: [analytics]
+  signals:
+    - id: settings-global
+      type: js_global
+      key: _hjSettings
+    - id: static
+      type: resource_url
+      contains: //static.hotjar.com/
+  provenance:
+    method: convention
+    basis: The Hotjar tracking code loads its script from static.hotjar.com.
+  tests:
+    - name: tracking code
+      page:
+        url: https://example.test/
+        html: '<script>h._hjSettings={hjid:1};a.src="https://static.hotjar.com/c/hotjar-1.js?sv=6";</script>'
+      expect: {}
+
+- id: microsoft-clarity
+  name: Microsoft Clarity
+  vendor: microsoft
+  categories: [analytics]
+  signals:
+    - id: c-host
+      type: resource_url
+      contains: //c.clarity.ms/
+    - id: tag
+      type: resource_url
+      contains: //www.clarity.ms/tag/
+  provenance:
+    method: convention
+    basis: The Clarity snippet loads https://www.clarity.ms/tag/<project id>.
+  tests:
+    - name: snippet
+      page:
+        url: https://example.test/
+        html: '<script>t.src="https://www.clarity.ms/tag/"+i;</script>'
+      expect: {}
+
+- id: cookiebot
+  name: Cookiebot
+  vendor: usercentrics
+  categories: [cookie-consent]
+  signals:
+    - id: uc-js
+      type: script_url
+      contains: //consent.cookiebot.com/
+  provenance:
+    method: convention
+    basis: Cookiebot's banner script is loaded from consent.cookiebot.com/uc.js.
+  tests:
+    - name: banner
+      page:
+        url: https://example.test/
+        html: '<script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="x"></script>'
+      expect: {}
+
+- id: google-fonts
+  name: Google Fonts
+  vendor: google
+  categories: [font]
+  signals:
+    - id: css-api
+      type: resource_url
+      contains: //fonts.googleapis.com/
+  provenance:
+    method: convention
+    basis: Google Fonts stylesheets are served from fonts.googleapis.com.
+  tests:
+    - name: stylesheet
+      page:
+        url: https://example.test/
+        html: '<link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">'
+      expect: {}
+
+- id: lets-encrypt
+  name: Let's Encrypt
+  vendor: isrg
+  categories: [security]
+  signals:
+    - id: issuer
+      type: tls_issuer
+      contains: Let's Encrypt
+  provenance:
+    method: convention
+    basis: Certificates issued by Let's Encrypt name it as issuer organisation.
+  tests:
+    - name: issuer
+      page:
+        url: https://example.test/
+        tls: {issuer: "C=US, O=Let's Encrypt, CN=R11"}
+      expect: {}

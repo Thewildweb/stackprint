@@ -1,0 +1,171 @@
+- id: npm/*
+  name: '{member}'
+  categories: [js-library]
+  member: '(?:@[a-z0-9][a-z0-9._-]*/)?[a-z0-9][a-z0-9._-]*'
+  identifiers:
+    purl: 'pkg:npm/{member}'
+  signals:
+    - id: jsdelivr
+      type: resource_url
+      regex: '//cdn\.jsdelivr\.net/npm/((?:@[a-zA-Z0-9][a-zA-Z0-9._-]*/)?[a-zA-Z0-9][a-zA-Z0-9._-]*)@([0-9][0-9a-z.-]*)/'
+      member: '\1'
+      version: '\2'
+    - id: unpkg
+      type: resource_url
+      regex: '//unpkg\.com/((?:@[a-zA-Z0-9][a-zA-Z0-9._-]*/)?[a-zA-Z0-9][a-zA-Z0-9._-]*)@([0-9][0-9a-z.-]*)/'
+      member: '\1'
+      version: '\2'
+  provenance:
+    method: convention
+    basis: >-
+      jsDelivr and unpkg serve npm packages at /npm/<name>@<version>/ and
+      /<name>@<version>/; the URL names the package and its version.
+  tests:
+    - name: jsdelivr scoped package
+      page:
+        url: https://example.test/
+        html: '<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>'
+      expect: {tech: npm/@popperjs/core, version: 2.11.8}
+    - name: unpkg
+      page:
+        url: https://example.test/
+        html: '<script src="https://unpkg.com/htmx.org@1.9.12/dist/htmx.min.js"></script>'
+      expect: {tech: npm/htmx.org, version: 1.9.12}
+
+- id: cdnjs/*
+  name: '{member} (cdnjs)'
+  categories: [js-library]
+  member: '[a-z0-9][a-z0-9._-]*'
+  signals:
+    - id: path
+      type: resource_url
+      regex: '//cdnjs\.cloudflare\.com/ajax/libs/([a-zA-Z0-9][a-zA-Z0-9._-]*)/([0-9][0-9a-z.-]*)/'
+      member: '\1'
+      version: '\2'
+  provenance:
+    method: convention
+    basis: >-
+      cdnjs serves libraries at /ajax/libs/<library>/<version>/. cdnjs names
+      are not always npm names, so they stay a family of their own until an
+      alias maps them.
+  tests:
+    - name: cdnjs path
+      page:
+        url: https://example.test/
+        html: '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">'
+      expect: {tech: cdnjs/font-awesome, version: 6.5.2}
+
+- id: npm/jquery
+  name: jQuery
+  vendor: openjs-foundation
+  website: https://jquery.com
+  categories: [js-library]
+  identifiers:
+    cpe: ["cpe:2.3:a:jquery:jquery"]
+    purl: pkg:npm/jquery
+  signals:
+    - id: versioned-file
+      type: script_url
+      regex: '/jquery[.-]([0-9]+\.[0-9]+\.[0-9]+)(?:\.slim)?(?:\.min)?\.js'
+      version: '\1'
+    - id: file
+      type: script_url
+      regex: '/jquery(?:\.slim)?(?:\.min)?\.js(?:[?#]|$)'
+      confidence: 80
+    - id: wp-core-copy
+      # WordPress registers its bundled jQuery with jQuery's own version.
+      type: script_url
+      regex: '/wp-includes/js/jquery/jquery(?:\.min)?\.js'
+      version_query: ver
+    - id: banner
+      type: asset_body
+      regex: 'jQuery (?:JavaScript Library )?v([0-9]+\.[0-9]+\.[0-9]+)'
+      version: '\1'
+      version_confidence: high
+    - id: global
+      type: js_global
+      key: jQuery.fn.jquery
+      regex: '^([0-9]+\.[0-9]+\.[0-9]+)'
+      version: '\1'
+      version_confidence: high
+  provenance:
+    method: convention
+    basis: >-
+      jQuery's distribution files are named jquery[-<version>][.min].js and
+      start with a "jQuery v<version>" banner; jQuery.fn.jquery holds the
+      version at runtime.
+  tests:
+    - name: versioned file name
+      page:
+        url: https://example.test/
+        html: '<script src="/js/jquery-3.6.0.min.js"></script>'
+      expect: {version: 3.6.0}
+    - name: wordpress copy
+      page:
+        url: https://example.test/
+        html: '<script src="/wp-includes/js/jquery/jquery.min.js?ver=3.7.1"></script>'
+      expect: {version: 3.7.1}
+    - name: jquery plugin is not jquery
+      page:
+        url: https://example.test/
+        html: '<script src="/js/jquery.cookie.min.js"></script>'
+      expect: {absent: true}
+
+- id: npm/swiper
+  name: Swiper
+  website: https://swiperjs.com
+  categories: [js-library]
+  identifiers:
+    purl: pkg:npm/swiper
+  signals:
+    - id: file
+      type: resource_url
+      regex: '/swiper(?:-bundle)?(?:\.min)?\.(?:js|css)(?:[?#]|$)'
+      version_query: ver
+      confidence: 80
+    - id: banner
+      type: asset_body
+      regex: '\* Swiper ([0-9]+\.[0-9]+\.[0-9]+)'
+      version: '\1'
+      version_confidence: high
+  provenance:
+    method: convention
+    basis: >-
+      Swiper ships swiper[-bundle][.min].js/.css whose banner reads
+      "Swiper <version>"; WordPress plugins that bundle it usually enqueue it
+      with the library version as ?ver=.
+  tests:
+    - name: bundled in a plugin
+      page:
+        url: https://example.test/
+        html: '<script src="/wp-content/plugins/elementor/assets/lib/swiper/v8/swiper.min.js?ver=8.4.5"></script>'
+      expect: {version: 8.4.5}
+
+- id: npm/bootstrap
+  name: Bootstrap
+  website: https://getbootstrap.com
+  categories: [css-framework]
+  identifiers:
+    cpe: ["cpe:2.3:a:getbootstrap:bootstrap"]
+    purl: pkg:npm/bootstrap
+  signals:
+    - id: file
+      type: resource_url
+      regex: '/bootstrap(?:\.bundle)?(?:\.min)?\.(?:js|css)(?:[?#]|$)'
+      confidence: 80
+    - id: banner
+      type: asset_body
+      regex: 'Bootstrap v([0-9]+\.[0-9]+\.[0-9]+)'
+      version: '\1'
+      version_confidence: high
+  provenance:
+    method: convention
+    basis: >-
+      Bootstrap's distribution files are bootstrap[.bundle][.min].js/.css with
+      a "Bootstrap v<version>" banner.
+  tests:
+    - name: file
+      page:
+        url: https://example.test/
+        html: '<link rel="stylesheet" href="/css/bootstrap.min.css">'
+      expect: {no_version: true}

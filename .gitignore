@@ -1,0 +1,21 @@
+# Build output
+/stackprint
+/dist/
+
+# Private, organisation-specific work stays out of this repository: put
+# corpus exports, mining reports, evidence, credentials and adapters for
+# your own infrastructure in local/ (or a separate private repository).
+/local/
+*.ndjson
+*.ndjson.zst
+*.sqlite
+*.parts.sqlite
+mine*.json
+mine*.md
+.env
+*.local.*
+
+# Python
+__pycache__/
+*.egg-info/
+.venv/
