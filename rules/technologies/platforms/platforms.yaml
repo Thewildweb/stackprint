@@ -205,6 +205,50 @@
         html: '<meta name="generator" content="Wix.com Website Builder">'
       expect: {}
 
+- id: wix-stores
+  name: Wix Stores
+  vendor: wix
+  website: https://www.wix.com/ecommerce
+  categories: [ecommerce]
+  implies: [wix]
+  signals:
+    # The server-rendered storefront widgets mark their elements with data-hook.
+    # The Stores app config (static.parastorage.com/services/wixstores-client-*)
+    # is on about half of all Wix sites, active shop or not, so it is not used.
+    - id: product-item
+      type: data_attr
+      key: data-hook
+      exact: product-item-root
+    - id: cart-icon
+      type: data_attr
+      key: data-hook
+      exact: cart-icon-button
+  provenance:
+    method: manual
+    basis: >-
+      Wix Stores renders its product gallery and header cart icon server-side
+      with data-hook="product-item-root" and data-hook="cart-icon-button". In
+      20,000 sample pages of the Dutch browser corpus both occurred only on
+      Wix pages (66 of 543 Wix sites).
+    corpus: nl-browser-full-sample
+    support: 66
+  tests:
+    - name: product gallery item
+      page:
+        url: https://shop.example.test/
+        html: '<div data-hook="product-item-root"><a data-hook="product-item-product-details-link" href="/product-page/x">x</a></div>'
+      expect: {min_confidence: 100}
+    - name: header cart icon
+      page:
+        url: https://shop.example.test/
+        html: '<button data-hook="cart-icon-button" aria-label="Cart"></button>'
+      expect: {min_confidence: 100}
+    - name: stores app config alone is not a shop
+      page:
+        url: https://site.example.test/
+        html: '<script type="application/json">{"viewerScriptUrl":"https:\/\/static.parastorage.com\/services\/wixstores-client-cart-ooi\/1.6388.0\/x.js"}</script>'
+      expect: {absent: true}
+
 - id: joomla
   name: Joomla
   vendor: joomla

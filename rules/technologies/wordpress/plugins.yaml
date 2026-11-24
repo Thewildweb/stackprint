@@ -34,13 +34,42 @@
       type: cookie
       key: woocommerce_items_in_cart
       confidence: 100
+    - id: js-class
+      # Body class WooCommerce prints server-side as woocommerce-no-js; its
+      # inline script swaps it for woocommerce-js in the rendered page. Survives
+      # asset combiners that rewrite the plugin path.
+      type: class
+      regex: '^woocommerce-(?:no-)?js$'
+      confidence: 100
+    - id: localized-params
+      # wp_localize_script output of the cart scripts. The HTML-only
+      # counterpart of the woocommerce_params global, for fetchers without JS.
+      type: inline_script
+      regex: '\bvar (?:wc_add_to_cart_params|wc_cart_fragments_params|woocommerce_params) = '
+      confidence: 100
   provenance:
     method: convention
     basis: >-
       WooCommerce prints a "WooCommerce <version>" generator tag, versions its
-      bundled libraries as <lib>-wc.<version>, and adds woocommerce body classes
-      and cart cookies.
+      bundled libraries as <lib>-wc.<version>, adds woocommerce body classes
+      and cart cookies, and localizes its cart scripts as inline
+      wc_add_to_cart_params / woocommerce_params variables.
   tests:
+    - name: body class with combined assets
+      page:
+        url: https://shop.example.test/
+        html: '<body class="home woocommerce-no-js"><script src="/wp-content/cache/min/1/all.js"></script></body>'
+      expect: {min_confidence: 100}
+    - name: localized cart params only
+      page:
+        url: https://shop.example.test/
+        html: '<script id="wc-add-to-cart-js-extra">var wc_add_to_cart_params = {"ajax_url":"\/wp-admin\/admin-ajax.php"};</script>'
+      expect: {min_confidence: 100}
+    - name: a page that only mentions the variable is not a shop
+      page:
+        url: https://blog.example.test/
+        html: '<p>Hook into wc_add_to_cart_params to change the button.</p>'
+      expect: {absent: true}
     - name: generator
       page:
         url: https://shop.example.test/

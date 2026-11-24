@@ -57,6 +57,17 @@
     key: TXT
     contains: include:spf.ccvshop.eu
     id: dns-1
+  - type: comment
+    regex: (?i)^\s*vertoshop\.js
+    id: platform-comment-0
+  - type: resource_url
+    regex: (?i)^https?://[^/]+/global/includes/xajax/
+    first_party: true
+    id: platform-path-1
+  - type: resource_url
+    regex: (?i)^https?://[^/]+/website/templates/global/
+    first_party: true
+    id: platform-path-2
   provenance:
     method: mined
     basis: 'Frequent unexplained tokens, identified and selected by an LLM reviewer from the observed
@@ -64,7 +75,10 @@
       its own domain. The SPF include is a reasonably strong signal for shops hosted on it, though the
       domain could also be used by shops that only use CCV''s mail relay. Support of 1918 sites matches
       a large platform. ccvshopserver.nl is the infrastructure domain of CCV Shop (formerly CCVShop).
-      The co-occurrence with PHP reflects its backend stack, '
+      The co-occurrence with PHP reflects its backend stack. Merged (maintainer decision 2026-11-24): the
+      platform signals of the former vertoshop rule (vertoshop.js comment, /website/templates/global/ and
+      /global/includes/xajax/ paths) identify CCV Shop storefronts; on Dutch pages labelled CCV Shop they
+      matched 122 of 157.'
     corpus: nl-browser-full-sample
     support: 69
     mined_run: review-2026-11-2
@@ -83,6 +97,21 @@
       dns:
         TXT:
         - v=spf1 include:spf.ccvshop.eu ~all
+    expect: {}
+  - name: comment vertoshop.js
+    page:
+      url: https://example.test/
+      html: <!-- vertoshop.js -->
+    expect: {}
+  - name: path /global/includes/xajax/
+    page:
+      url: https://example.test/
+      html: <script src="/global/includes/xajax/x.js"></script>
+    expect: {}
+  - name: path /website/templates/global/
+    page:
+      url: https://example.test/
+      html: <script src="/website/templates/global/x.js"></script>
     expect: {}
 - id: conversionbear
   name: Conversion Bear
@@ -903,49 +932,4 @@
       url: https://example.test/
       js_globals:
         showPreorderTakeaway: ''
-    expect: {}
-- id: vertoshop
-  name: Vertoshop
-  vendor: verto
-  website: https://www.vertoshop.nl
-  categories:
-  - ecommerce
-  signals:
-  - type: comment
-    regex: (?i)^\s*vertoshop\.js
-    id: comment-0
-  - type: resource_url
-    regex: (?i)^https?://[^/]+/global/includes/xajax/
-    first_party: true
-    id: path-1
-  - type: resource_url
-    regex: (?i)^https?://[^/]+/website/templates/global/
-    first_party: true
-    id: path-2
-  provenance:
-    method: mined
-    basis: Frequent unexplained tokens, identified and selected by an LLM reviewer from the observed tokens
-      only, then replayed on the corpora. The comment 'vertoshop.js' and the identical template layout
-      across ~2500 sites suggest the Dutch Vertoshop e-commerce platform. The vendor name and website
-      are from my own knowledge, not from the candidate tokens. High co-occurrence with Google Tag Manager
-      is incidental.
-    corpus: nl-browser-full-sample
-    support: 77
-    mined_run: review-2026-11-2
-    reviewed_by: llm + corpus replay; pending maintainer spot check
-  tests:
-  - name: comment vertoshop.js
-    page:
-      url: https://example.test/
-      html: <!-- vertoshop.js -->
-    expect: {}
-  - name: path /global/includes/xajax/
-    page:
-      url: https://example.test/
-      html: <script src="/global/includes/xajax/x.js"></script>
-    expect: {}
-  - name: path /website/templates/global/
-    page:
-      url: https://example.test/
-      html: <script src="/website/templates/global/x.js"></script>
     expect: {}
