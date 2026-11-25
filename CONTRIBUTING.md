@@ -84,19 +84,25 @@ Signal fields:
 
 | field | meaning |
 |---|---|
-| `type` | `url`, `header`, `cookie`, `meta`, `html`, `script_url`, `stylesheet_url`, `resource_url`, `inline_script`, `inline_style`, `class`, `id`, `data_attr`, `comment`, `js_global`, `dns`, `tls_issuer`, `asset_body` |
+| `type` | `url`, `header`, `cookie`, `meta`, `html`, `script_url`, `stylesheet_url`, `resource_url`, `inline_script`, `inline_style`, `class`, `id`, `data_attr`, `comment`, `js_global`, `dns`, `tls_issuer`, `asset_body`, `storage`, `resource_header`, `cert_host` |
 | `key` | for keyed types (`header`, `cookie`, `meta`, `data_attr`, `js_global`, `dns`): the item name; the matcher then applies to the value. Without `key`, the matcher applies to item names |
 | `exact` / `prefix` / `contains` / `suffix` / `regex` | one matcher; none means key presence. Regexes are RE2, unanchored; use `(?i)` for case-insensitivity |
 | `ignore_case` | literal matchers ignore ASCII case |
 | `first_party` | URL types only: the URL must be on the page's registrable domain |
-| `confidence` | 0-100 added to the detection (default 100; sums are capped at 100) |
+| `confidence` | 0-100 added to the detection (default 100; sums are capped at 100). Below 80 marks a weak signal: on its own it gives a weak detection, which readers can filter on |
 | `version` | template over captures: `\1`, `v\1`, `\1?yes:no` |
 | `version_query` | take the version from this query parameter (plain dotted versions only) |
 | `version_confidence` | `high` (the technology states its version), `medium` (default), `low` |
 | `bound` | `{min, min_inclusive, max, max_inclusive}`: what a match implies about the version |
 
 Test `expect` fields: `tech` (defaults to the rule id), `absent`,
-`version`, `no_version`, `min_confidence`, `range_min`, `range_max`.
+`version`, `no_version`, `min_confidence`, `max_confidence`, `range_min`, `range_max`.
+
+`cert_host` items are host names from certificates (the document's
+`cert_hosts`), matched on the part below the registrable domain: `fiori-prd`
+for `fiori-prd.example.com`, `sap.intra` for `*.sap.intra.example.com`. Feeders
+that pre-select host names can list the literals these rules need with
+`stackprint anchors -type cert_host`.
 
 Every rule needs at least one test, including a negative one where a
 signal could plausibly over-match. Run `stackprint validate` and

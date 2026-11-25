@@ -26,6 +26,7 @@ const (
 	ObservedTLS       = "tls"
 	ObservedAssets    = "assets"
 	ObservedStorage   = "storage"
+	ObservedCertHosts = "cert_hosts"
 )
 
 // Document is one fetched page.
@@ -75,6 +76,10 @@ type Document struct {
 	DNS map[string][]string `json:"dns,omitempty" yaml:"dns,omitempty"`
 
 	TLS *TLS `json:"tls,omitempty" yaml:"tls,omitempty"`
+
+	// CertHosts lists host names under the registrable domain seen in
+	// certificates (certificate-transparency logs), e.g. fiori.example.nl.
+	CertHosts []string `json:"cert_hosts,omitempty" yaml:"cert_hosts,omitempty"`
 
 	// Storage lists Web Storage entries the page set (browser fetchers).
 	Storage []StorageItem `json:"storage,omitempty" yaml:"storage,omitempty"`
@@ -170,6 +175,9 @@ func (d *Document) EffectiveObserved() []string {
 	}
 	if len(d.Storage) > 0 {
 		out = append(out, ObservedStorage)
+	}
+	if len(d.CertHosts) > 0 {
+		out = append(out, ObservedCertHosts)
 	}
 	return out
 }

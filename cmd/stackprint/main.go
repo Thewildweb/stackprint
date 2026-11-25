@@ -54,6 +54,8 @@ func main() {
 		err = cmdList(args)
 	case "js-keys":
 		err = cmdJSKeys(args)
+	case "anchors":
+		err = cmdAnchors(args)
 	case "mine":
 		err = cmdMine(args)
 	case "tokens":
@@ -87,6 +89,7 @@ commands:
   validate     check the rule files
   list         list technology ids
   js-keys      list JS global paths browser fetchers should evaluate
+  anchors      list the literals one signal type's rules need (feeders pre-select with them)
   mine         mine candidate signals from a corpus of page documents
   tokens       stream per-page tokens and labels as TSV, for corpora too large for mine
   ablate       measure what each signal group contributes to detections
@@ -314,6 +317,38 @@ func cmdList(args []string) error {
 	}
 	for _, t := range set.Technologies {
 		fmt.Printf("%s\t%s\t%s\n", t.ID, t.Name, strings.Join(t.Categories, ","))
+	}
+	return nil
+}
+
+func cmdAnchors(args []string) error {
+	fs := flag.NewFlagSet("anchors", flag.ExitOnError)
+	var c common
+	c.register(fs, false)
+	typ := fs.String("type", "", "signal type, e.g. cert_host")
+	asRegex := fs.Bool("regex", false, "print each signal as an RE2 expression instead (exact selection)")
+	fs.Parse(args)
+	t, ok := page.ParseSignalType(*typ)
+	if !ok {
+		return fmt.Errorf("unknown signal type %q", *typ)
+	}
+	sc, _, err := c.load()
+	if err != nil {
+		return err
+	}
+	if *asRegex {
+		for _, e := range sc.Matchers(t) {
+			fmt.Println(e)
+		}
+		return nil
+	}
+	lits, unanchored := sc.Anchors(t)
+	if len(unanchored) > 0 {
+		return fmt.Errorf("%s signals without a literal anchor (a pre-selection would miss them): %s",
+			*typ, strings.Join(unanchored, ", "))
+	}
+	for _, l := range lits {
+		fmt.Println(l)
 	}
 	return nil
 }

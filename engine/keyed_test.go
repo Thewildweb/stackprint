@@ -138,3 +138,50 @@ func TestKeyedScreeningDNS(t *testing.T) {
 		t.Fatalf("detections: %+v", res.Detections)
 	}
 }
+
+// TestCertHostTokens: certificate hosts become their part below the
+// registrable domain; the domain itself, duplicates and wildcards are handled.
+func TestCertHostTokens(t *testing.T) {
+	toks := page.Tokenize(&page.Document{URL: "https://example.nl/", CertHosts: []string{
+		"Fiori-PRD.example.nl.", "*.sap.intra.example.co.uk", "example.nl", "fiori-prd.example.nl", "",
+	}})
+	got := toks.Items[page.SigCertHost]
+	want := []page.Item{
+		{Key: "fiori-prd.example.nl", Value: "fiori-prd"},
+		{Key: "sap.intra.example.co.uk", Value: "sap.intra"},
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("cert_host items %+v, want %+v", got, want)
+	}
+}
+
+// TestAnchors: every cert_host signal yields a literal, so a feeder can
+// pre-select host names; an anchorless regex is reported, not dropped.
+func TestAnchors(t *testing.T) {
+	s := scanner(t, `
+- id: a
+  name: A
+  categories: [cms]
+  signals:
+    - {id: one, type: cert_host, regex: '(?:^|\.)fiori[a-z0-9-]*(?:\.|$)'}
+    - {id: two, type: cert_host, contains: SapRouter, ignore_case: true}
+  provenance: {method: manual}
+- id: b
+  name: B
+  categories: [cms]
+  signals:
+    - {id: any, type: cert_host, regex: '^[a-z]+$'}
+  provenance: {method: manual}
+`)
+	lits, unanchored := s.Anchors(page.SigCertHost)
+	if !reflect.DeepEqual(lits, []string{"fiori", "saprouter"}) {
+		t.Fatalf("anchors %v", lits)
+	}
+	if !reflect.DeepEqual(unanchored, []string{"b#any"}) {
+		t.Fatalf("unanchored %v", unanchored)
+	}
+	want := []string{`(?:^|\.)fiori[a-z0-9-]*(?:\.|$)`, `(?i)saprouter`, `^[a-z]+$`}
+	if got := s.Matchers(page.SigCertHost); !reflect.DeepEqual(got, want) {
+		t.Fatalf("matchers %q, want %q", got, want)
+	}
+}

@@ -35,6 +35,7 @@ const (
 	SigAssetBody                        // body of a fetched JS/CSS asset (asset scans only)
 	SigStorage                          // keyed: Web Storage key
 	SigResourceHeader                   // keyed: lowercased response header name of a sub-resource
+	SigCertHost                         // certificate host name below its registrable domain (Item.Key: the full host)
 	NumSignalTypes
 )
 
@@ -42,7 +43,7 @@ var signalNames = [NumSignalTypes]string{
 	"url", "header", "cookie", "meta", "html", "script_url", "stylesheet_url",
 	"resource_url", "inline_script", "inline_style", "class", "id", "data_attr",
 	"comment", "js_global", "dns", "tls_issuer", "asset_body", "storage",
-	"resource_header",
+	"resource_header", "cert_host",
 }
 
 func (t SignalType) String() string {
@@ -104,6 +105,7 @@ const (
 	maxResHeaders   = 5000
 	maxStorage      = 1000
 	maxStorageValue = 200
+	maxCertHosts    = 5000
 )
 
 // Tokenize parses a Document into Tokens.
@@ -214,6 +216,26 @@ func Tokenize(d *Document) *Tokens {
 
 	if d.TLS != nil && d.TLS.Issuer != "" {
 		t.add(SigTLSIssuer, "", d.TLS.Issuer)
+	}
+
+	// Certificate host names: the value is the part below the registrable
+	// domain ("fiori" for fiori.example.nl, "sap.intra" for
+	// *.sap.intra.example.com), so rules match labels without the domain
+	// itself (shop.fiori.nl has no fiori label). The registrable domain alone
+	// says nothing and is skipped.
+	seenHost := map[string]bool{}
+	for _, h := range d.CertHosts {
+		h = strings.TrimSuffix(strings.ToLower(strings.TrimSpace(h)), ".")
+		h = strings.TrimPrefix(h, "*.")
+		if h == "" || seenHost[h] || len(seenHost) >= maxCertHosts {
+			continue
+		}
+		seenHost[h] = true
+		reg := RegistrableDomain(h)
+		if reg == "" || reg == h || !strings.HasSuffix(h, "."+reg) {
+			continue
+		}
+		t.add(SigCertHost, h, strings.TrimSuffix(h, "."+reg))
 	}
 	return t
 }

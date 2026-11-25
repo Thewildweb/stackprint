@@ -195,6 +195,7 @@ type Expect struct {
 	Version       string `yaml:"version,omitempty"`
 	NoVersion     bool   `yaml:"no_version,omitempty"`
 	MinConfidence int    `yaml:"min_confidence,omitempty"`
+	MaxConfidence int    `yaml:"max_confidence,omitempty"` // a weak signal alone stays weak
 	RangeMin      string `yaml:"range_min,omitempty"`
 	RangeMax      string `yaml:"range_max,omitempty"`
 }

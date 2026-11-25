@@ -10,6 +10,7 @@ package engine
 import (
 	"fmt"
 	"regexp"
+	"regexp/syntax"
 	"sort"
 	"strings"
 	"sync"
@@ -378,4 +379,91 @@ func (s *Scanner) JSGlobalKeys() []string {
 	}
 	sort.Strings(keys)
 	return keys
+}
+
+// Anchors lists literals for the signals of one type: every value such a
+// signal can match contains at least one of them (lowercased when the signal
+// ignores case). A feeder can pre-select candidate items with them, e.g. the
+// certificate host names worth putting into documents. unanchored names the
+// signals without a usable literal, which a pre-selection would miss.
+func (s *Scanner) Anchors(t page.SignalType) (lits, unanchored []string) {
+	seen := map[string]bool{}
+	add := func(l string, fold bool) {
+		if fold {
+			l = lowerASCII(l)
+		}
+		if l != "" && !seen[l] {
+			seen[l] = true
+			lits = append(lits, l)
+		}
+	}
+	for i := range s.signals {
+		c := &s.signals[i]
+		if c.typ != t {
+			continue
+		}
+		switch c.kind {
+		case mExact, mPrefix, mContains, mSuffix:
+			add(c.lit, c.ci)
+		case mRegex:
+			// Any mandatory literal will do for a pre-selection (sound, if
+			// broad), so neither the screen's minimum length nor its cap.
+			re, err := syntax.Parse(c.re.String(), syntax.Perl)
+			if err != nil {
+				unanchored = append(unanchored, c.id)
+				continue
+			}
+			ls, fold := mandatory(re.Simplify())
+			if len(ls) == 0 {
+				unanchored = append(unanchored, c.id)
+				continue
+			}
+			for _, l := range ls {
+				add(l, fold)
+			}
+		default:
+			unanchored = append(unanchored, c.id)
+		}
+	}
+	sort.Strings(lits)
+	sort.Strings(unanchored)
+	return lits, unanchored
+}
+
+// Matchers lists the signals of one type as RE2 expressions (literal
+// matchers quoted, ignore_case as (?i)), so a feeder can select exactly the
+// items the rules can match, e.g. in a database that speaks RE2.
+func (s *Scanner) Matchers(t page.SignalType) []string {
+	var out []string
+	seen := map[string]bool{}
+	for i := range s.signals {
+		c := &s.signals[i]
+		if c.typ != t {
+			continue
+		}
+		var e string
+		switch c.kind {
+		case mExact:
+			e = "^" + regexp.QuoteMeta(c.lit) + "$"
+		case mPrefix:
+			e = "^" + regexp.QuoteMeta(c.lit)
+		case mSuffix:
+			e = regexp.QuoteMeta(c.lit) + "$"
+		case mContains:
+			e = regexp.QuoteMeta(c.lit)
+		case mRegex:
+			e = c.re.String()
+		default:
+			e = ""
+		}
+		if c.ci && c.kind != mRegex {
+			e = "(?i)" + e
+		}
+		if !seen[e] {
+			seen[e] = true
+			out = append(out, e)
+		}
+	}
+	sort.Strings(out)
+	return out
 }

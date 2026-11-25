@@ -157,7 +157,8 @@ with signals, provenance and test fixtures:
 
 Signal types: `url`, `header`, `cookie`, `meta`, `html`, `script_url`,
 `stylesheet_url`, `resource_url`, `inline_script`, `inline_style`, `class`,
-`id`, `data_attr`, `comment`, `js_global`, `dns`, `tls_issuer`, `asset_body`.
+`id`, `data_attr`, `comment`, `js_global`, `dns`, `tls_issuer`, `asset_body`,
+`storage`, `resource_header`, `cert_host` (certificate host names).
 Matchers: `exact`, `prefix`, `contains`, `suffix`, `regex` (RE2), or key
 presence for keyed types. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full
 format.

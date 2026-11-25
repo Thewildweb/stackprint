@@ -125,6 +125,9 @@ func RunTests(sc *engine.Scanner, set *ruleset.Set) (failures []TestFailure, n i
 				if e.MinConfidence > 0 && got.Confidence < e.MinConfidence {
 					fail("confidence %d, want >= %d", got.Confidence, e.MinConfidence)
 				}
+				if e.MaxConfidence > 0 && got.Confidence > e.MaxConfidence {
+					fail("confidence %d, want <= %d", got.Confidence, e.MaxConfidence)
+				}
 				if e.RangeMin != "" || e.RangeMax != "" {
 					r := got.VersionRange
 					if r == nil || r.Min != e.RangeMin || r.Max != e.RangeMax {
