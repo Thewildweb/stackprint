@@ -180,6 +180,9 @@ type Scanner struct {
 
 	lists [page.NumSignalTypes]*index
 	keyed [page.NumSignalTypes]map[string][]int
+	// keyedIdx screens the values of keyed items per key, as lists does for
+	// list types: a DNS record runs only the signals whose anchors it contains.
+	keyedIdx [page.NumSignalTypes]map[string]*index
 
 	folderCache sync.Map // tech id -> *regexp.Regexp (nil when none)
 }
@@ -232,9 +235,11 @@ func New(set *ruleset.Set, know *knowledge.Store) (*Scanner, error) {
 	}
 
 	builders := [page.NumSignalTypes]*indexBuilder{}
+	keyedB := [page.NumSignalTypes]map[string]*indexBuilder{}
 	for t := range builders {
 		builders[t] = newIndexBuilder()
 		s.keyed[t] = map[string][]int{}
+		keyedB[t] = map[string]*indexBuilder{}
 	}
 	for ti := range s.techs {
 		def := s.techs[ti].def
@@ -249,6 +254,12 @@ func New(set *ruleset.Set, know *knowledge.Store) (*Scanner, error) {
 			c := &s.signals[id]
 			if c.typ.Keyed() && !c.onName {
 				s.keyed[c.typ][c.key] = append(s.keyed[c.typ][c.key], id)
+				b := keyedB[c.typ][c.key]
+				if b == nil {
+					b = newIndexBuilder()
+					keyedB[c.typ][c.key] = b
+				}
+				b.add(id, c)
 				continue
 			}
 			builders[c.typ].add(id, c)
@@ -256,6 +267,10 @@ func New(set *ruleset.Set, know *knowledge.Store) (*Scanner, error) {
 	}
 	for t := range builders {
 		s.lists[t] = builders[t].freeze()
+		s.keyedIdx[t] = map[string]*index{}
+		for k, b := range keyedB[t] {
+			s.keyedIdx[t][k] = b.freeze()
+		}
 	}
 	return s, nil
 }

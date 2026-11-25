@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"sort"
 	"strings"
 	"time"
 
@@ -75,20 +76,91 @@ func (s *Scanner) match(toks *page.Tokens) []hit {
 	return hits
 }
 
-// matchKeyed evaluates signals selected by item name.
+// matchKeyed evaluates signals selected by item name, screened by the item
+// values with the key's index. Candidates run in signal order for each item, as
+// without the screen, so the hits come out the same.
 func (s *Scanner) matchKeyed(t page.SignalType, items []page.Item, site string, hits []hit) []hit {
-	byKey := s.keyed[t]
+	byKey := s.keyedIdx[t]
 	if len(byKey) == 0 {
 		return hits
 	}
+	groups := map[string][]int{} // key -> item positions
+	var keys []string
+	for i, it := range items {
+		k := normKey(t, it.Key)
+		if byKey[k] == nil {
+			continue
+		}
+		if _, ok := groups[k]; !ok {
+			keys = append(keys, k)
+		}
+		groups[k] = append(groups[k], i)
+	}
+	cands := make(map[string][]int, len(keys))
+	for _, k := range keys {
+		vals := make([]string, len(groups[k]))
+		for j, i := range groups[k] {
+			vals[j] = items[i].Value
+		}
+		c := byKey[k].candidates(vals)
+		sort.Ints(c)
+		cands[k] = c
+	}
 	for _, it := range items {
-		for _, id := range byKey[normKey(t, it.Key)] {
+		for _, id := range cands[normKey(t, it.Key)] {
 			if h, ok := s.evaluate(id, it, it.Value, site); ok {
 				hits = append(hits, h)
 			}
 		}
 	}
 	return hits
+}
+
+// candidates lists the signals of idx that can match one of subjects: exact
+// matches, anchors found by the automatons, and the signals without anchors.
+func (idx *index) candidates(subjects []string) []int {
+	var cand []int
+	seen := map[int]bool{}
+	add := func(id int) {
+		if !seen[id] {
+			seen[id] = true
+			cand = append(cand, id)
+		}
+	}
+	for _, v := range subjects {
+		for _, id := range idx.exact[v] {
+			add(id)
+		}
+		if len(idx.exactCI) > 0 {
+			for _, id := range idx.exactCI[lowerASCII(v)] {
+				add(id)
+			}
+		}
+	}
+	if idx.cs != nil || idx.ci != nil {
+		text := strings.Join(subjects, "\n")
+		collect := func(ac *ahoCorasick, sigs [][]int, txt string) {
+			if ac == nil {
+				return
+			}
+			present := make([]bool, len(sigs))
+			var found []int
+			ac.match(txt, present, &found)
+			for _, a := range found {
+				for _, id := range sigs[a] {
+					add(id)
+				}
+			}
+		}
+		collect(idx.cs, idx.csSig, text)
+		if idx.ci != nil {
+			collect(idx.ci, idx.ciSig, lowerASCII(text))
+		}
+	}
+	for _, id := range idx.always {
+		add(id)
+	}
+	return cand
 }
 
 // matchList screens item values (or names, for keyed types) with the type's
