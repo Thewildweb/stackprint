@@ -49,3 +49,6 @@
 - {id: authentication, name: Authentication}
 - {id: captcha, name: CAPTCHA and bot protection}
 - {id: media-hosting, name: Media hosting}
+- {id: erp, name: ERP and business software}
+- {id: hr, name: HR and recruiting}
+- {id: procurement, name: "Procurement, travel and expense"}

@@ -1,0 +1,860 @@
+# SAP products, curated. Signals carry a confidence: 100 = strong evidence on its own,
+# below 80 = weak (e.g. a bare 'sap' host label, a Gigya preconnect); weak signals add up.
+# cert_host values are the part of a certificate host name below the registrable domain.
+- id: sap-erp
+  name: SAP ERP (ECC, S/4HANA, BW)
+  vendor: sap
+  website: https://www.sap.com/products/erp.html
+  categories:
+  - erp
+  signals:
+  - type: cert_host
+    regex: (?:^|\.)sap(?:[0-9]+|-[a-z0-9_-]+)(?:\.|$)
+    confidence: 100
+    id: ct-sap-n
+  - type: cert_host
+    regex: (?:^|\.)[a-z0-9_-]+-sap(?:-[a-z0-9_-]+)?(?:\.|$)
+    confidence: 100
+    id: ct-x-sap
+  - type: cert_host
+    regex: (?:^|\.)sap(?:prd|prod|qas|dev|tst|test|acc|ecc|erp|bw|crm|srm|gw|fiori|s4|hana|bo|mii|ewm|ep|cloud|sf|connect|portal|login|sso|app|apps|router|wd|wdisp|webdisp|web|gui|jam|cdc|cpi|btp|api|grc|gts|bi|isu|solman|sbx|sandbox|qa|uat|ers|demo|db|disp|ds|byd|bydesign)(?:prd|prod|qas|dev|tst|test|acc|ecc|erp|bw|crm|srm|gw|fiori|s4|hana|bo|mii|ewm|ep|cloud|sf|connect|portal|login|sso|app|apps|router|wd|wdisp|webdisp|web|gui|jam|cdc|cpi|btp|api|grc|gts|bi|isu|solman|sbx|sandbox|qa|uat|ers|demo|db|disp|ds|byd|bydesign|p|q|d|po|pas|aas|ci|hdb|scs|ascs|int|beta|odata|development|apac|[0-9])*(?:-[a-z0-9_-]+)?(?:\.|$)
+    confidence: 100
+    id: ct-sap-role
+  - type: cert_host
+    regex: (?:^|\.)sap(?:p|q|d|po|pi)(?:[0-9]+|-[a-z0-9_-]+)(?:\.|$)
+    confidence: 100
+    id: ct-sap-short
+  - type: cert_host
+    regex: (?:^|\.)(?:webdispatcher|solman|bw4hana)[a-z0-9_-]*(?:\.|$)
+    confidence: 100
+    id: ct-infra
+  - type: cert_host
+    regex: (?:^|\.)rise\.sap(?:\.|$)
+    confidence: 100
+    id: ct-rise
+  - type: cert_host
+    regex: (?:^|\.)sap(?:\.|$)
+    confidence: 40
+    id: ct-sap-bare
+  provenance:
+    method: manual
+    basis: 'Certificate-transparency host names below an organisation''s own domain. Hand check of strong-label hits on Dutch
+      company domains: SAP evidence 19 of 20, right company 17 of 20. Labels without an SAP token (s4., bw., hana.) were right
+      2 of 20 and are left out; erp.* 0 of 20. A bare ''sap'' label is kept as a weak signal: on arbitrary domains it is often
+      unrelated.'
+    reviewed_by: llm + corpus replay; maintainer decision 2026-11-25
+  tests:
+  - name: cert host sap-prd.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - sap-prd.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host sap01.intra.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - sap01.intra.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host api-sap-vcn.app.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - api-sap-vcn.app.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host 360t-sap.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - 360t-sap.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host sapqas.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - sapqas.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host saprouter.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - saprouter.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host sapwdisp5.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - sapwdisp5.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host sapbosbx.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - sapbosbx.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host sapqas-01.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - sapqas-01.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host sapgwppas.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - sapgwppas.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host sapbwd20.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - sapbwd20.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host sapp24.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - sapp24.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host sapd-01.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - sapd-01.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host webdispatcher.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - webdispatcher.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host bw4hana-dev.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - bw4hana-dev.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host vhabcds4ci.rise.sap.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - vhabcds4ci.rise.sap.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host sap.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - sap.example.nl
+    expect:
+      max_confidence: 40
+  - name: cert host *.sap.intra.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - '*.sap.intra.example.nl'
+    expect:
+      max_confidence: 40
+  - name: look-alike labels
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - sappi.example.nl
+      - sapphire.example.nl
+      - sapporo.example.nl
+      - sapboost.example.nl
+      - sapien.example.nl
+      - sapling.example.nl
+      - erp.example.nl
+      - s4.example.nl
+      - hana.example.nl
+    expect:
+      absent: true
+  - name: domain named sap
+    page:
+      url: https://sap-juice.nl/
+      cert_hosts:
+      - www.sap-juice.nl
+      - shop.sapjes.nl
+    expect:
+      absent: true
+- id: sap-s4hana
+  name: SAP S/4HANA
+  vendor: sap
+  website: https://www.sap.com/products/erp/s4hana.html
+  categories:
+  - erp
+  implies:
+  - sap-erp
+  signals:
+  - type: cert_host
+    regex: (?:^|\.)s4hana[a-z0-9_-]*(?:\.|$)
+    confidence: 100
+    id: ct-s4hana
+  - type: cert_host
+    regex: (?:^|\.)s4h?-?(?:prd|prod|qas|dev|tst|test|acc)[0-9]*(?:\.|$)
+    confidence: 100
+    id: ct-s4-role
+  provenance:
+    method: manual
+    basis: 'Certificate-transparency host names below an organisation''s own domain. Hand check of strong-label hits on Dutch
+      company domains: SAP evidence 19 of 20, right company 17 of 20. Labels without an SAP token (s4., bw., hana.) were right
+      2 of 20 and are left out; erp.* 0 of 20. A bare ''sap'' label is kept as a weak signal: on arbitrary domains it is often
+      unrelated.'
+    reviewed_by: llm + corpus replay; maintainer decision 2026-11-25
+  tests:
+  - name: cert host s4hana.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - s4hana.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host s4hana-qas.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - s4hana-qas.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host s4prd.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - s4prd.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host s4h-dev.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - s4h-dev.example.nl
+    expect:
+      min_confidence: 100
+  - name: s4 without a role
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - s4.example.nl
+      - s4b.example.nl
+    expect:
+      absent: true
+- id: sap-fiori
+  name: SAP Fiori / NetWeaver
+  vendor: sap
+  website: https://www.sap.com/products/technology-platform/fiori.html
+  categories:
+  - erp
+  signals:
+  - type: cert_host
+    regex: (?:^|\.)fiori(?:[0-9]+|-[a-z0-9_-]+|(?:prd|prod|qas|dev|tst|test|acc|sbx|qa|uat|launchpad|lp|app|apps|portal|gw|sap)[0-9]*(?:-[a-z0-9_-]+)?)(?:\.|$)
+    confidence: 100
+    id: ct-fiori-role
+  - type: cert_host
+    regex: (?:^|\.)fiori(?:\.|$)
+    confidence: 80
+    id: ct-fiori
+  - type: cert_host
+    regex: (?:^|\.)(?:netweaver[a-z0-9_-]*|mysap(?:[0-9]+|-[a-z0-9_-]+)?|nwbc(?:[0-9]+|-[a-z0-9_-]+)?)(?:\.|$)
+    confidence: 100
+    id: ct-netweaver
+  - type: resource_url
+    regex: ^https?://[^/]+/sap/(?:bc/ui5_ui5|bc/ui2|opu/odata|public/bc)/
+    confidence: 100
+    id: path-sap-bc
+    first_party: true
+  - type: html
+    regex: (?:href|action)=[\"']/(?:irj/portal|nwbc)(?:[/?#\"']|$)
+    confidence: 100
+    id: link-irj
+  provenance:
+    method: manual
+    basis: 'Certificate-transparency host names below an organisation''s own domain. Hand check of strong-label hits on Dutch
+      company domains: SAP evidence 19 of 20, right company 17 of 20. Labels without an SAP token (s4., bw., hana.) were right
+      2 of 20 and are left out; erp.* 0 of 20. A bare ''sap'' label is kept as a weak signal: on arbitrary domains it is often
+      unrelated. Page paths: NetWeaver''s /sap/bc/, /sap/opu/, /irj/portal and /nwbc/.'
+    reviewed_by: llm + corpus replay; maintainer decision 2026-11-25
+  tests:
+  - name: cert host fiori-prd.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - fiori-prd.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host fioriqas.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - fioriqas.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host fiorilaunchpad.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - fiorilaunchpad.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host fiori.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - fiori.example.nl
+    expect:
+      min_confidence: 80
+  - name: cert host mysap.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - mysap.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host nwbc.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - nwbc.example.nl
+    expect:
+      min_confidence: 100
+  - name: resource_url path-sap-bc
+    page:
+      url: https://example.nl/
+      html: <script src="/sap/bc/ui5_ui5/ui2/ushell/x.js"></script>
+    expect: {}
+  - name: html link-irj
+    page:
+      url: https://example.nl/
+      html: <a href="/irj/portal">Portal</a>
+    expect: {}
+  - name: a site named fiori
+    page:
+      url: https://fiori.nl/
+      cert_hosts:
+      - shop.fiori.nl
+      - www.fiori.nl
+    expect:
+      absent: true
+  - name: fiori- and mysap-words
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - fioritura.example.it
+      - fiorista.example.it
+      - fioricet.example.com
+      - mysapo.example.jp
+      - nwbcrmcloud.example.de
+    expect:
+      absent: true
+- id: sap-business-one
+  name: SAP Business One
+  vendor: sap
+  website: https://www.sap.com/products/erp/business-one.html
+  categories:
+  - erp
+  signals:
+  - type: cert_host
+    regex: (?:^|\.)(?:b1-?(?:web|sl|service|servicelayer|api|portal|cloud|sql|hana|ui|webclient|app|server|srv|lic|license|webaccess|wa)[0-9]*|sapb1[a-z0-9_-]*|businessone[a-z0-9_-]*)(?:\.|$)
+    confidence: 100
+    id: ct-b1
+  provenance:
+    method: manual
+    basis: 'Certificate-transparency host names below an organisation''s own domain. Hand check of strong-label hits on Dutch
+      company domains: SAP evidence 19 of 20, right company 17 of 20. Labels without an SAP token (s4., bw., hana.) were right
+      2 of 20 and are left out; erp.* 0 of 20. A bare ''sap'' label is kept as a weak signal: on arbitrary domains it is often
+      unrelated.'
+    reviewed_by: llm + corpus replay; maintainer decision 2026-11-25
+  tests:
+  - name: cert host sapb1.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - sapb1.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host sapb1-test.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - sapb1-test.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host b1-servicelayer.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - b1-servicelayer.example.nl
+    expect:
+      min_confidence: 100
+  - name: bare b1
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - b1.example.nl
+    expect:
+      absent: true
+- id: sap-businessobjects
+  name: SAP BusinessObjects
+  vendor: sap
+  website: https://www.sap.com/products/technology-platform/bi-platform.html
+  categories:
+  - erp
+  signals:
+  - type: cert_host
+    regex: (?:^|\.)bobj[a-z0-9_-]*(?:\.|$)
+    confidence: 100
+    id: ct-bobj
+  - type: cert_host
+    regex: (?:^|\.)businessobjects[a-z0-9_-]*(?:\.|$)
+    confidence: 100
+    id: ct-businessobjects
+  provenance:
+    method: manual
+    basis: 'Certificate-transparency host names below an organisation''s own domain. Hand check of strong-label hits on Dutch
+      company domains: SAP evidence 19 of 20, right company 17 of 20. Labels without an SAP token (s4., bw., hana.) were right
+      2 of 20 and are left out; erp.* 0 of 20. A bare ''sap'' label is kept as a weak signal: on arbitrary domains it is often
+      unrelated.'
+    reviewed_by: llm + corpus replay; maintainer decision 2026-11-25
+  tests:
+  - name: cert host bobjreports.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - bobjreports.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host businessobjects.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - businessobjects.example.nl
+    expect:
+      min_confidence: 100
+- id: sap-bydesign
+  name: SAP Business ByDesign
+  vendor: sap
+  website: https://www.sap.com/products/erp/business-bydesign.html
+  categories:
+  - erp
+  signals:
+  - type: cert_host
+    regex: (?:^|\.)bydesign[a-z0-9_-]*(?:\.|$)
+    confidence: 60
+    id: ct-bydesign
+  - type: cert_host
+    regex: (?:^|\.)byd(?:\.|$)
+    confidence: 40
+    id: ct-byd
+  provenance:
+    method: manual
+    basis: 'Certificate-transparency host names below an organisation''s own domain. Hand check of strong-label hits on Dutch
+      company domains: SAP evidence 19 of 20, right company 17 of 20. Labels without an SAP token (s4., bw., hana.) were right
+      2 of 20 and are left out; erp.* 0 of 20. A bare ''sap'' label is kept as a weak signal: on arbitrary domains it is often
+      unrelated.'
+    reviewed_by: llm + corpus replay; maintainer decision 2026-11-25
+  tests:
+  - name: cert host bydesign.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - bydesign.example.nl
+    expect:
+      max_confidence: 60
+  - name: cert host byd.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - byd.example.nl
+    expect:
+      max_confidence: 40
+- id: sap-successfactors
+  name: SAP SuccessFactors
+  vendor: sap
+  website: https://www.sap.com/products/hcm.html
+  categories:
+  - hr
+  signals:
+  - type: cert_host
+    regex: (?:^|\.)successfactors[a-z0-9_-]*(?:\.|$)
+    confidence: 100
+    id: ct-sf
+  - type: dns
+    key: TXT
+    confidence: 100
+    id: txt-verification
+    contains: successfactors-site-verification
+  - type: dns
+    key: TXT
+    confidence: 90
+    id: spf-sfdc
+    contains: include:_spf-sfdc.successfactors.com
+  - type: dns
+    key: TXT
+    confidence: 90
+    id: spf-sapsf
+    regex: include:(?:_spf-dc[0-9]*\.)?(?:sapsf|successfactors)\.(?:eu|com)\b
+  - type: html
+    regex: https?://career[0-9]*\.(?:successfactors|sapsf)\.(?:eu|com)/
+    confidence: 100
+    id: host-career
+  - type: resource_url
+    regex: ^https?://(?:performancemanager[0-9]*\.successfactors\.(?:eu|com)|rmkcdn\.successfactors\.com)/
+    confidence: 100
+    id: host-pm
+  provenance:
+    method: manual
+    basis: 'Certificate-transparency host names below an organisation''s own domain. Hand check of strong-label hits on Dutch
+      company domains: SAP evidence 19 of 20, right company 17 of 20. Labels without an SAP token (s4., bw., hana.) were right
+      2 of 20 and are left out; erp.* 0 of 20. A bare ''sap'' label is kept as a weak signal: on arbitrary domains it is often
+      unrelated. DNS: the site-verification TXT was SAP for 20 of 20 sampled domains. Hosts and paths seen on Dutch company
+      sites; vendor pages (www.*), supplier-network and newsletter links excluded.'
+    reviewed_by: llm + corpus replay; maintainer decision 2026-11-25
+  tests:
+  - name: cert host successfactors.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - successfactors.example.nl
+    expect:
+      min_confidence: 100
+  - name: dns TXT successfactors-site-verification=abc123
+    page:
+      url: https://example.nl/
+      dns:
+        TXT:
+        - successfactors-site-verification=abc123
+    expect: {}
+  - name: dns TXT v=spf1 include:_spf-sfdc.successfactors.
+    page:
+      url: https://example.nl/
+      dns:
+        TXT:
+        - v=spf1 include:_spf-sfdc.successfactors.com ~all
+    expect: {}
+  - name: dns TXT v=spf1 include:_spf-dc12.sapsf.eu -all
+    page:
+      url: https://example.nl/
+      dns:
+        TXT:
+        - v=spf1 include:_spf-dc12.sapsf.eu -all
+    expect: {}
+  - name: dns TXT v=spf1 include:successfactors.eu -all
+    page:
+      url: https://example.nl/
+      dns:
+        TXT:
+        - v=spf1 include:successfactors.eu -all
+    expect: {}
+  - name: dns TXT v=spf1 include:_spf-dc2.successfactors.c
+    page:
+      url: https://example.nl/
+      dns:
+        TXT:
+        - v=spf1 include:_spf-dc2.successfactors.com ~all
+    expect: {}
+  - name: html host-career
+    page:
+      url: https://example.nl/
+      html: <a href="https://career5.successfactors.eu/career?company=acme">Jobs</a>
+    expect: {}
+  - name: resource_url host-pm
+    page:
+      url: https://example.nl/
+      html: <script src="https://rmkcdn.successfactors.com/x.js"></script>
+    expect: {}
+  - name: vendor site link
+    page:
+      url: https://example.nl/
+      html: <a href="https://www.successfactors.com/">SF</a>
+    expect:
+      absent: true
+- id: sap-ariba
+  name: SAP Ariba
+  vendor: sap
+  website: https://www.sap.com/products/spend-management/ariba.html
+  categories:
+  - procurement
+  signals:
+  - type: cert_host
+    regex: (?:^|\.)ariba[a-z0-9_-]*(?:\.|$)
+    confidence: 100
+    id: ct-ariba
+  - type: html
+    regex: https?://(?:s1(?:-[a-z0-9]+)?\.ariba\.com|[a-z0-9-]+\.sourcing(?:-[a-z0-9]+)?\.ariba\.com)/
+    confidence: 100
+    id: host-buyer
+  provenance:
+    method: manual
+    basis: 'Certificate-transparency host names below an organisation''s own domain. Hand check of strong-label hits on Dutch
+      company domains: SAP evidence 19 of 20, right company 17 of 20. Labels without an SAP token (s4., bw., hana.) were right
+      2 of 20 and are left out; erp.* 0 of 20. A bare ''sap'' label is kept as a weak signal: on arbitrary domains it is often
+      unrelated. Hosts and paths seen on Dutch company sites; vendor pages (www.*), supplier-network and newsletter links
+      excluded. Supplier-network pages (discovery., service.) are suppliers, not buyers.'
+    reviewed_by: llm + corpus replay; maintainer decision 2026-11-25
+  tests:
+  - name: cert host ariba.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - ariba.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host ariba9r2.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - ariba9r2.example.nl
+    expect:
+      min_confidence: 100
+  - name: html host-buyer
+    page:
+      url: https://example.nl/
+      html: <a href="https://acme.sourcing.ariba.com/ad/register">Suppliers</a>
+    expect: {}
+  - name: supplier network and vendor links
+    page:
+      url: https://example.nl/
+      html: <a href="https://discovery.ariba.com/profile/x">x</a><a href="https://service.ariba.com/">y</a><a href="https://www.ariba.com/">z</a><a
+        href="https://www.sariba.com/">w</a>
+    expect:
+      absent: true
+- id: sap-concur
+  name: SAP Concur
+  vendor: sap
+  website: https://www.concur.com
+  categories:
+  - procurement
+  signals:
+  - type: cert_host
+    regex: (?:^|\.)concur(?:-[a-z0-9_-]+|[0-9]+|solutions[a-z0-9_-]*|landing[a-z0-9_-]*|sso[a-z0-9_-]*|app[a-z0-9_-]*)?(?:\.|$)
+    confidence: 100
+    id: ct-concur
+  provenance:
+    method: manual
+    basis: 'Certificate-transparency host names below an organisation''s own domain. Hand check of strong-label hits on Dutch
+      company domains: SAP evidence 19 of 20, right company 17 of 20. Labels without an SAP token (s4., bw., hana.) were right
+      2 of 20 and are left out; erp.* 0 of 20. A bare ''sap'' label is kept as a weak signal: on arbitrary domains it is often
+      unrelated.'
+    reviewed_by: llm + corpus replay; maintainer decision 2026-11-25
+  tests:
+  - name: cert host concur.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - concur.example.nl
+    expect:
+      min_confidence: 100
+  - name: cert host concur-sso.example.nl
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - concur-sso.example.nl
+    expect:
+      min_confidence: 100
+  - name: concurrent
+    page:
+      url: https://example.nl/
+      cert_hosts:
+      - concurrent.example.nl
+      - concurrentie.example.nl
+    expect:
+      absent: true
+- id: sap-btp
+  name: SAP Business Technology Platform
+  vendor: sap
+  website: https://www.sap.com/products/technology-platform.html
+  categories:
+  - hosting
+  signals:
+  - type: resource_url
+    regex: ^https?://[a-z0-9.-]+\.hana\.ondemand\.com/
+    confidence: 100
+    id: host-hana
+  - type: html
+    regex: https?://[a-z0-9-]+\.accounts\.ondemand\.com/
+    confidence: 100
+    id: host-ias
+  - type: dns
+    key: CNAME
+    confidence: 100
+    id: cname-hana
+    regex: \.(?:hana|hec)\.ondemand\.com$
+  provenance:
+    method: manual
+    basis: 'Hosts and paths seen on Dutch company sites; vendor pages (www.*), supplier-network and newsletter links excluded.
+      DNS: CNAMEs into SAP''s cloud zones, anchored at the end (ondemand.com alone is a common substring).'
+    reviewed_by: llm + corpus replay; maintainer decision 2026-11-25
+  tests:
+  - name: resource_url host-hana
+    page:
+      url: https://example.nl/
+      html: <script src="https://acme.cfapps.eu10.hana.ondemand.com/app.js"></script>
+    expect: {}
+  - name: html host-ias
+    page:
+      url: https://example.nl/
+      html: <a href="https://acme.accounts.ondemand.com/saml2/idp/sso">Login</a>
+    expect: {}
+  - name: dns CNAME www.example.all.hec.ondemand.com
+    page:
+      url: https://example.nl/
+      dns:
+        CNAME:
+        - www.example.all.hec.ondemand.com
+    expect: {}
+  - name: dns CNAME x.cfapps.eu10.hana.ondemand.com
+    page:
+      url: https://example.nl/
+      dns:
+        CNAME:
+        - x.cfapps.eu10.hana.ondemand.com
+    expect: {}
+  - name: look-alike zone
+    page:
+      url: https://example.nl/
+      dns:
+        CNAME:
+        - x.kxondemand.com
+        - www.hostingondemand.nl
+    expect:
+      absent: true
+- id: sap-sales-cloud
+  name: SAP Sales and Service Cloud (C4C)
+  vendor: sap
+  website: https://www.sap.com/products/crm.html
+  categories:
+  - crm
+  signals:
+  - type: dns
+    key: TXT
+    confidence: 90
+    id: spf-cmail
+    regex: (?:include|mx|a):(?:_spf\.cmail\.ondemand\.com|[a-z0-9.-]+\.mail\.crm\.ondemand\.com)\b
+  - type: resource_url
+    regex: ^https?://[a-z0-9-]+\.crm\.ondemand\.com/
+    confidence: 100
+    id: host-crm
+  provenance:
+    method: manual
+    basis: 'Hosts and paths seen on Dutch company sites; vendor pages (www.*), supplier-network and newsletter links excluded.
+      DNS: the C4C mail SPF includes.'
+    reviewed_by: llm + corpus replay; maintainer decision 2026-11-25
+  tests:
+  - name: dns TXT v=spf1 include:_spf.cmail.ondemand.com -
+    page:
+      url: https://example.nl/
+      dns:
+        TXT:
+        - v=spf1 include:_spf.cmail.ondemand.com -all
+    expect: {}
+  - name: dns TXT v=spf1 mx:my327148.mail.crm.ondemand.com
+    page:
+      url: https://example.nl/
+      dns:
+        TXT:
+        - v=spf1 mx:my327148.mail.crm.ondemand.com -all
+    expect: {}
+  - name: resource_url host-crm
+    page:
+      url: https://example.nl/
+      html: <script src="https://my123.crm.ondemand.com/x.js"></script>
+    expect: {}
+- id: sap-customer-data-cloud
+  name: SAP Customer Data Cloud (Gigya)
+  vendor: sap
+  website: https://www.sap.com/products/crm/customer-data-cloud.html
+  categories:
+  - authentication
+  signals:
+  - type: script_url
+    regex: ^https?://cdns(?:\.[a-z0-9]+)?\.gigya\.com/
+    confidence: 100
+    id: script-cdns
+  - type: resource_url
+    regex: ^https?://accounts\.[a-z0-9]+\.gigya\.com/
+    confidence: 100
+    id: host-accounts
+  - type: resource_url
+    regex: ^https?://cdns(?:\.[a-z0-9]+)?\.gigya\.com
+    confidence: 50
+    id: preconnect-cdns
+  provenance:
+    method: manual
+    basis: Hosts and paths seen on Dutch company sites; vendor pages (www.*), supplier-network and newsletter links excluded.
+      A loaded script is strong; a preconnect alone is weak.
+    reviewed_by: llm + corpus replay; maintainer decision 2026-11-25
+  tests:
+  - name: script_url script-cdns
+    page:
+      url: https://example.nl/
+      html: <script src="https://cdns.eu1.gigya.com/js/gigya.js?apiKey=x"></script>
+    expect: {}
+  - name: resource_url host-accounts
+    page:
+      url: https://example.nl/
+      html: <script>fetch("https://accounts.eu1.gigya.com/accounts.getAccountInfo")</script>
+    expect: {}
+  - name: resource_url preconnect-cdns
+    page:
+      url: https://example.nl/
+      html: <link rel="preconnect" href="https://cdns.gigya.com">
+    expect:
+      max_confidence: 50
+  - name: vendor site link
+    page:
+      url: https://example.nl/
+      html: <a href="https://www.gigya.com/">Gigya</a>
+    expect:
+      absent: true
+- extends: sap-commerce-cloud
+  signals:
+  - type: dns
+    key: CNAME
+    confidence: 100
+    id: cname-ccv2
+    regex: \.cc\.commerce\.ondemand\.com$
+  - type: resource_url
+    regex: ^https?://[a-z0-9.-]+-p[0-9]+-public\.model-t\.cc\.commerce\.ondemand\.com/
+    confidence: 100
+    id: host-ccv2
+  - type: resource_url
+    regex: /yacceleratorstorefront/
+    confidence: 100
+    id: path-yaccelerator
+  provenance:
+    method: manual
+    basis: Commerce Cloud storefronts on SAP's CCv2 hosting (www CNAME, the storefront's api/media hosts), and the accelerator
+      storefront path.
+  tests:
+  - name: dns CNAME accstorefront.cab12-acme1-p1-public.mode
+    page:
+      url: https://example.nl/
+      dns:
+        CNAME:
+        - accstorefront.cab12-acme1-p1-public.model-t.cc.commerce.ondemand.com
+    expect: {}
+  - name: resource_url host-ccv2
+    page:
+      url: https://example.nl/
+      html: <script src="https://api.cab12-acme1-p1-public.model-t.cc.commerce.ondemand.com/occ/v2/x.js"></script>
+    expect: {}
+  - name: resource_url path-yaccelerator
+    page:
+      url: https://example.nl/
+      html: <link rel="stylesheet" href="/yacceleratorstorefront/_ui/responsive/x.css">
+    expect: {}
